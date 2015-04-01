@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+
+
+# File used to generate CW noise at a given frequency
+# Then filter and resample if desired
+
+import numpy as np
+from math import sin
+from impulse import butter_bandpass_filter
+import matplotlib.pyplot as plt
+from scipy.signal import resample
+from random import random
+
+
+def generate_cw(sample_length,upsample,sample_frequency, carrier_frequency,modulation_frequency, peak_amplitude,filter_flag=True):
+
+    upsample_length = sample_length*upsample
+    
+    # Define the cw array
+    cw = np.zeros(sample_length)
+    resampled_cw = np.zeros(upsample_length)
+    M=peak_amplitude
+    
+    # Fill array with sine wave of given freq and amp
+    for i in range(0,int(sample_length)):
+        cw[i] = peak_amplitude*np.sin(2*np.pi*(carrier_frequency/sample_frequency)*float(i))*(1+M*np.cos(2*np.pi*(modulation_frequency/sample_frequency)*float(i)))
+
+    if filter_flag:
+        cw = butter_bandpass_filter(cw)
+
+    phase_shift = int((sample_frequency/carrier_frequency)*random())
+    cw = np.roll(cw,phase_shift)
+
+    # Upsample cw if desired
+    if(upsample > 1.0):
+        resampled_cw = resample(cw,upsample_length)
+        return resampled_cw
+    else:
+        return cw
+
+if __name__ == '__main__':
+    sample_length = 64
+    upsample = 1.0
+    sample_frequency =  2800000000.0
+    carrier_frequency =  800000000.0
+    modulation_frequency = 400000000.0
+    peak_amplitude = 25.0
+    filter_flag = False
+
+    upsample_length = sample_length*upsample
+
+    cw = np.zeros(upsample_length)
+    t = np.zeros(upsample_length)
+
+    cw = generate_cw(sample_length,upsample,sample_frequency,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+
+    plt.figure(1)
+    plt.clf()
+    #print (1/sample_frequency)*1000000000.0
+    
+    t = np.linspace(0,(1/sample_frequency)*sample_length*1000000000,upsample_length)
+
+    plt.plot(t,cw, label='CW Signal')
+
+    plt.show()
+
+    

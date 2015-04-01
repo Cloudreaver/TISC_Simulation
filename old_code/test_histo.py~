@@ -1,0 +1,16 @@
+import ROOT
+import numpy as np
+
+# Now you can start typing ROOT commands
+myhist = ROOT.TH1D('example','My first pyroot histogram',100,0,10)
+
+myvalues = np.zeros(100)
+myvalues[1]=10
+myvalues[50]=5
+for i in range(0,100):
+    
+    myhist.Fill(myvalues[0])
+
+#myhist.FillRandom('gaus')
+myhist.Draw()
+myhist.Fit('gaus')
