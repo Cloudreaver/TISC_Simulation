@@ -1,0 +1,16 @@
+Input parameters for TISC simulation
+
+Start time: 2014_11_18_16.11.05
+Number of samples per run: 48
+Impulse Position: 10
+Ch B Input Delay: 3
+Ch C Input Delay: 5
+Minimum SNR: 0.0001
+Maximum SNR: 6.0
+SNR Step: 1.0
+Minimum Threshold: 0.0
+Maximum Threshold: 600.0
+Threshold Step: 25.0
+Number of Runs: 1000
+Upsample Factor: 32
+Digitization Threshold: 1.0*Noise_RMS

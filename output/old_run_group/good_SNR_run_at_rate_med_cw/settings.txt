@@ -1,0 +1,22 @@
+Input parameters for TISC simulation
+
+Start time: 2015_01_13_14.01.55
+Number of samples per run: 64
+Impulse Position: 10
+Using GLITC Delays
+Adding CW Noise
+CW Frequency: 260000000.0
+Modulation Frequency: 16000000.0
+CW Amplitude: 25.0
+Ch B Input Delay: 3
+Ch C Input Delay: 5
+Minimum SNR: 0.0
+Maximum SNR: 6.0
+SNR Step: 1.0
+Minimum Threshold: 0.0
+Maximum Threshold: 200.0
+Threshold Step: 25.0
+Number of Runs: 10000
+Upsample Factor: 32
+Digitization Threshold: 1.0*Noise_RMS
+End time: 2015_01_18_11.01.05
