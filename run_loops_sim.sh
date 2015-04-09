@@ -9,7 +9,7 @@
 
 #OPTIONS FOR PBS
 
-cd /home/hupe/thesis_code/modular_branch #probably not necessary, precaution
+cd /home/hupe/thesis_code #probably not necessary, precaution
 source /home/hupe/.bash_profile
 
 

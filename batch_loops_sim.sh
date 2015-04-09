@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd ~/thesis_code/modular_branch #directory file are in
+cd ~/thesis_code #directory file are in
 
 qsub run_loops_sim.sh
