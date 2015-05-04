@@ -4,7 +4,7 @@ if __name__ == '__main__':
    from ROOT import TGraph, TMultiGraph,TCanvas,TImage,gROOT,gStyle,gSystem,gPad,TFile,TLegend, TH1F, TTree
    import time
    import os
-   from TISC_sim import TISC_sim
+   from three_phi_sector_TISC_sim import TISC_sim
    #from impulse import impulse_gen
    import numpy as np
    import subprocess as Popen
@@ -12,22 +12,22 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_runs = 10000                # Number of events to generate per loop
+   num_runs = 3000                  # Number of events to generate per loop
    upsample = 1                     # Upsamping factor
    digitization_factor = 1.0        # Digitization factor( *Noise_RMS)
    num_bits = 3                     # Number of bits available to digitizer
    max_trigger_rate = 162500000.0   # TISC Clock Speed
-   event_rate=0.25*max_trigger_rate # Rate to generate events
+   event_rate=100                   # Rate to generate events
    num_samples = 74                 # Length of Signal Window
    noise_sigma = 20.0
    noise_mean = 0.0
-   draw_flag = False                # 1=draw event graphs, 0=don't                        
-   SNR_draw_flag = True             # 1=draw SNR graphs, 0=don't
+   draw_flag = False                # 1=draw event graphs,0=don't                        
+   SNR_draw_flag = True             # 1=draw SNR graphs,  0=don't
    delay_type_flag = 1              # 1=use GLITC delays, 0=all possible delays
    cw_flag = False
    carrier_frequency=260000000.0    # Hz
    modulation_frequency=16000000.0  # Hz
-   peak_amplitude = 1.0*noise_sigma #Peak amplitude in mV
+   peak_amplitude = 1.0*noise_sigma # Peak amplitude in mV
    
 
    impulse_pos = 5                  # Position of impulse in Ch A (must be contained within first 32 samples)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
       os.makedirs(output_dir)
    settings_filename = open(output_dir+"/settings.txt","w")
    #print output_dir
-   settings_filename.write("Input parameters for TISC simulation\n\n")
+   settings_filename.write("Input parameters for 3 phi sector TISC simulation\n\n")
    settings_filename.write("Start time: "+str(time.strftime('%Y_%m_%d_%H.%M.%S')))
    settings_filename.write("\nNumber of events per run: " + str(num_runs))
    settings_filename.write("\nNumber of samples per event: " + str(num_samples))
@@ -231,7 +231,7 @@ if __name__ == '__main__':
    # Close SNR Loop
 
    # Set up Multigraph and add graphs
-   multigraph.SetTitle("TISC SNR Curves (@ "+str(event_rate/(10**6))+" MHz Event Rate); Threshold [~W]; Averaged Trigger Rate [Hz]")
+   multigraph.SetTitle("TISC 3 Phi Sector SNR Curves (@ "+str(event_rate/(10**6))+" MHz Event Rate); Threshold [~W]; Averaged Trigger Rate [Hz]")
    if(SNR_draw_flag):
       multigraph.Draw("ACP")
       SNR_canvas.BuildLegend(0.7,0.6,0.99,0.9)

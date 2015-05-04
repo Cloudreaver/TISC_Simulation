@@ -1,10 +1,4 @@
-id: cannot find name for group ID 247
-OBJ: TStyle	ildStyle	ILD Style : 0 at: 0x23ab070
+OBJ: TStyle	ildStyle	ILD Style : 0 at: 0x323b380
 Error in <TUnixSystem::DynamicPathName>: libCLHEP.so does not exist in /usr/local/root-5.34.18/lib:/usr/local/intel/composer_xe_2013.1.117/compiler/lib/intel64:/usr/local/intel/composer_xe_2013.1.117/mpirt/lib/intel64:/usr/local/intel/composer_xe_2013.1.117/mkl/lib/intel64:/usr/local/intel/composer_xe_2013.1.117/tbb/lib/intel64/cc4.1.0_libc2.4_kernel2.6.16.21:.:/usr/local/root-5.34.18/lib::/usr/local/root-5.34.18/cint/cint/stl
-/home/hupe/thesis_code/modular_branch/output/2015_03_30_10.47.22
-TFile**		/home/hupe/thesis_code/modular_branch/output/2015_03_30_10.47.22/TISC_SNR.root	
- TFile*		/home/hupe/thesis_code/modular_branch/output/2015_03_30_10.47.22/TISC_SNR.root	
-Press any key to closeTraceback (most recent call last):
-  File "./run_TISC_sim_at_rate.py", line 254, in <module>
-    dummy = raw_input('Press any key to close')
-EOFError: EOF when reading a line
+TFile**		/home/hupe/thesis_code/output/2015_04_29_10.19.45/TISC_SNR.root	
+ TFile*		/home/hupe/thesis_code/output/2015_04_29_10.19.45/TISC_SNR.root	

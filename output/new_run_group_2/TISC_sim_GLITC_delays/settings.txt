@@ -1,0 +1,22 @@
+Input parameters for TISC simulation
+
+Start time: 2015_04_16_10.59.39
+Number of events per run: 10000
+Number of samples per event: 74
+Number of bits: 3
+Impulse Position: 5
+Using GLITC Delays
+Ch B Input Delay: 0
+Ch C Input Delay: 0
+Noise Mean: 0.0
+Noise Sigma: 20.0
+Minimum SNR: 0.0
+Maximum SNR: 8.0
+SNR Step: 1.0
+Minimum Threshold: 0.0
+Maximum Threshold: 800.0
+Threshold Step: 25.0
+Number of Runs: 10000
+Upsample Factor: 1
+Digitization Threshold: 1.0*Noise_RMS
+End time: 2015_04_21_04.04.57

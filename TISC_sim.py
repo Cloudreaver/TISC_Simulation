@@ -19,7 +19,7 @@ def TISC_sim(SNR,threshold,
              num_samples=74,upsample=1,cw_flag=0,
              peak_amplitude=25.0,carrier_frequency=260000000.0,modulation_frequency=16000000.0,
              seed=5522684,draw_flag=0,digitization_factor=1,
-             delay_type_flag=0,
+             delay_type_flag=1,
              output_dir="output/"):
    
    gROOT.Reset()
@@ -160,7 +160,7 @@ def TISC_sim(SNR,threshold,
 ##########################################
    # Run the signal through the GLITC module to get trigger
    trigger_flag, max_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag)
-
+   #print "Non. Subtracted Sum "+str(max_sum)
 #########################################
 
 #########################################
@@ -364,7 +364,7 @@ def TISC_sim(SNR,threshold,
       c1.Update()
       #dummy = raw_input('Press any key to close')
 
-   return trigger_flag
+   return trigger_flag, max_sum
 
 if __name__ == '__main__':
    import ROOT
