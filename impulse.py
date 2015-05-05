@@ -78,6 +78,7 @@ if __name__ == '__main__':
     import random
     from noise import generate_noise
     from digitizer import digitize
+    from cw import generate_cw
     
     sample_frequency = 2800000000
     sample_length = 74
@@ -86,20 +87,27 @@ if __name__ == '__main__':
     draw_flag = 0
     output_dir = 'output/'
     clock_jitter = 0.000000001
-    poly_index = 5
-    SNR = 5
-    noise_sigma = 100
+    #poly_index = 5
+    SNR = 3
+    noise_sigma = 20
     save_plot_flag = True
+    cw_flag = False
+    carrier_frequency=260000000.0    # Hz
+    modulation_frequency=16000000.0  # Hz
+    peak_amplitude = 0.5*noise_sigma #Peak amplitude in mV
     
     upsample_length = upsample*sample_length
     
     impulse_sample = np.zeros(sample_length)
     impulse_upsample = np.zeros(upsample_length)
     impulse_downsample = np.zeros(sample_length)
-    impulse_upsample_fit_poly = np.zeros(poly_index)
+    #impulse_upsample_fit_poly = np.zeros(poly_index)
     impulse_upsample_fit = np.zeros(upsample_length)
     impulse_noise_sample = np.zeros(sample_length)
     digitized_sample = np.zeros(sample_length)
+    noise_sample = np.zeros(sample_length)
+    cw_sample = np.zeros(sample_length)
+    #noise_cw_sample = np.zeros(sample_length)
     
     time = np.linspace(0.0,((sample_length*(10**9))/sample_frequency), sample_length)
     impulse_sample = impulse_gen(sample_length,impulse_position,1,sample_frequency,draw_flag=draw_flag,output_dir=output_dir)
@@ -107,39 +115,71 @@ if __name__ == '__main__':
     plt.clf()
     plt.plot(time,impulse_sample[0:sample_length])
     plt.xlabel("Time [ns]")
-    plt.ylabel("Voltage [mV]")
+    plt.ylabel("Amplitude [unitless]")
     plt.title("Impulse Simulation")
     if (save_plot_flag):
         plt.savefig("impulse_sample.png")
     
-    upsample_time = np.linspace(0.0,((upsample_length*(10**9))/sample_frequency), upsample_length)
-    impulse_upsample = impulse_gen(sample_length,impulse_position,upsample,sample_frequency,draw_flag=draw_flag,output_dir=output_dir)
-    plt.figure(2)
-    plt.clf()
-    plt.plot(upsample_time,impulse_upsample[0:upsample_length])
-    plt.xlabel("Time [ns]")
-    plt.ylabel("Voltage [mV]")
-    plt.title("Upsampled Impulse Simulation")
-    if (save_plot_flag):
-        plt.savefig("upsample_impulse_sample.png")
+    #upsample_time = np.linspace(0.0,((upsample_length*(10**9))/sample_frequency), upsample_length)
+    #impulse_upsample = impulse_gen(sample_length,impulse_position,upsample,sample_frequency,draw_flag=draw_flag,output_dir=output_dir)
+    #plt.figure(2)
+    #plt.clf()
+    #plt.plot(upsample_time,impulse_upsample[0:upsample_length])
+    #plt.xlabel("Time [ns]")
+    #plt.ylabel("Voltage [mV]")
+    #plt.title("Upsampled Impulse Simulation")
+    #if (save_plot_flag):
+        #plt.savefig("upsample_impulse_sample.png")
     
     signal_amp = (2*SNR*noise_sigma)
     difference=np.amax(impulse_sample)-np.amin(impulse_sample) # Get peak to peak voltage
     impulse_sample *= (1/difference) # Normalize input
     impulse_sample *= signal_amp # Amplify
-    impulse_noise_sample = impulse_sample + generate_noise(sample_length=sample_length,upsample=1,noise_mean=380,noise_sigma=100,filter_flag=1)
-    plt.figure(4)
+    
+    noise_sample = generate_noise(sample_length=sample_length,upsample=1,noise_mean=0.0,noise_sigma=noise_sigma,filter_flag=1)
+    plt.figure(3)
+    plt.clf()
+    plt.plot(time,noise_sample)
+    plt.xlabel("Time [ns]")
+    plt.ylabel("Voltage [mV]")
+    plt.title("Band Limited Noise Sample")
+    if (save_plot_flag):
+        plt.savefig("noise_sample.png")
+    
+    if (cw_flag):
+        cw_sample = generate_cw(sample_length=sample_length,upsample=1,sample_frequency=sample_frequency,carrier_frequency=carrier_frequency,modulation_frequency=modulation_frequency,peak_amplitude=peak_amplitude,filter_flag=1)
+        plt.figure(4)
+        plt.clf()
+        plt.plot(time,cw_sample)
+        plt.xlabel("Time [ns]")
+        plt.ylabel("Voltage [mV]")
+        plt.title("Carrier Wave Sample (Peak Amp: "+str(peak_amplitude/noise_sigma)+" x Noise RMS)")
+        if (save_plot_flag):
+            plt.savefig("cw_sample.png")
+        
+        noise_sample = np.add(noise_sample,cw_sample)
+        plt.figure(5)
+        plt.clf()
+        plt.plot(time,noise_sample)
+        plt.xlabel("Time [ns]")
+        plt.ylabel("Voltage [mV]")
+        plt.title("Noise+CW Sample")
+        if (save_plot_flag):
+            plt.savefig("noise_cw_sample.png")
+        
+    impulse_noise_sample = np.add(impulse_sample,noise_sample)
+    plt.figure(6)
     plt.clf()
     plt.plot(time,impulse_noise_sample)
     plt.xlabel("Time [ns]")
     plt.ylabel("Voltage [mV]")
-    plt.title("Impulse + Noise Sample")
+    plt.title("Impulse(SNR "+str(SNR)+") + Noise Sample(RMS "+str(noise_sigma)+"mV)")
     if (save_plot_flag):
         plt.savefig("impulse_noise_sample.png")
     
     
-    digitized_sample = digitize(impulse_noise_sample,sample_length,upsample=1,num_bits=3,noise_mean=380,noise_rms=100,digitization_factor=1)
-    plt.figure(5)
+    digitized_sample = digitize(impulse_noise_sample,sample_length,upsample=1,num_bits=3,noise_mean=0.0,noise_rms=20,digitization_factor=1)
+    plt.figure(8)
     plt.clf()
     plt.plot(time,digitized_sample)
     plt.xlabel("Time [ns]")

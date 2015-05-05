@@ -5,7 +5,7 @@
 # Then filter and resample if desired
 
 import numpy as np
-from math import sin
+#from math import sin
 from impulse import butter_bandpass_filter
 from scipy.signal import resample
 from random import random

@@ -2,19 +2,21 @@
 
 # Simulates the output of the GLITC 
 
-from array import array
+#from array import array
 import numpy as np
 
 
 
-def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0,average_signal=0.0):
+def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0,average_signal=0):
    
-   speed_of_light = 2.99*10**8
-   sample_period = 3.5810**(-10)
-   ab_distance = 1.0
-   ac_horz_distance = 1.17
-   ac_vert_distance = 4.7
-   ac_distance = np.sqrt((ac_horz_distance)**2+(ac_vert_distance)**2)
+   #speed_of_light = 2.99*10**8
+   #sample_period = 3.5810**(-10)
+   #ab_distance = 1.0
+   #ac_horz_distance = 1.17
+   #ac_vert_distance = 4.7
+   #ac_distance = np.sqrt((ac_horz_distance)**2+(ac_vert_distance)**2)
+   
+   max_sum_shift = 150
 
    trigger_flag = 0
    if (delay_type_flag == 1):
@@ -82,8 +84,8 @@ def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig
    this_sum = 0
    total_sum = 0
    max_total_sum = 0
-   add_AB = [0] * TISC_sample_length
-   add_ABC = [0] * TISC_sample_length
+   add_AB = np.zeros(TISC_sample_length)
+   add_ABC = np.zeros(TISC_sample_length)
 
    best_chunk = 0
    b_lower_index_limit = 0
@@ -121,14 +123,20 @@ def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig
             add_AB = np.add(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
             add_ABC = np.add(add_AB,c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
             square_ABC = add_ABC**2
-            new_average_signal = int(np.sqrt(np.mean(square_ABC)))
-            square_ABC -= average_signal
             square_sum_ABC[i] = np.sum(square_ABC)
 
       # Add all the two sums for each delay
       total_sum = np.add(square_sum_ABC,previous_square_sum)
       # Find the maximum sum
       max_total_sum = np.amax(total_sum)
+      unsubtracted_max_total_sum = max_total_sum
+      max_total_sum += max_sum_shift
+      #print "Unsubtracted: "+str(max_total_sum)
+      max_total_sum -= average_signal
+      #print "Subtracted: "+str(max_total_sum)
+      #if (max_total_sum < 0):
+         #max_total_sum = 0
+      #print "Subtracted: "+str(max_total_sum)
       # Find the delays for the largest sum
       best_delays = GLITC_delays[np.argmax(total_sum)]
       
@@ -138,37 +146,37 @@ def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig
       #print "Max Sum: "+str(max_total_sum)
       #print best_delays
 
-      ab_theta = np.arcsin((speed_of_light*best_delays[1]*sample_period)/ab_distance)
-      ac_theta = np.arctan(ac_vert_distance/ac_horz_distance)-np.pi/2+np.arcsin((speed_of_light*best_delays[2]*sample_period)/ac_distance)
-      ab_theta *= 180/np.pi
-      ac_theta*= 180/np.pi
+      #ab_theta = np.arcsin((speed_of_light*best_delays[1]*sample_period)/ab_distance)
+      #ac_theta = np.arctan(ac_vert_distance/ac_horz_distance)-np.pi/2+np.arcsin((speed_of_light*best_delays[2]*sample_period)/ac_distance)
+      #ab_theta *= 180/np.pi
+      #ac_theta*= 180/np.pi
 
    else:
 
       #Set the lower index limit of Ch B/C
-      for chunk in range(0,(num_samples/TISC_sample_length)):
-         b_lower_index_limit = 0
-         c_lower_index_limit = 0
-         previous_sum_ABC = square_sum_ABC
+      #for chunk in range(0,(num_samples/TISC_sample_length)):
+         #b_lower_index_limit = 0
+         #c_lower_index_limit = 0
+         #previous_sum_ABC = square_sum_ABC
 
          # Shift Ch B/C around
-         for b in range(b_lower_index_limit,len(a_dig_waveform)-TISC_sample_length):
-            for c in range(c_lower_index_limit,len(a_dig_waveform)-TISC_sample_length):
-               this_sum = 0
-               add_AB = np.add(a_dig_waveform[chunk*TISC_sample_length:(chunk*TISC_sample_length)+TISC_sample_length],b_dig_waveform[b:TISC_sample_length+b])
-               add_ABC = np.add(add_AB,c_dig_waveform[c:TISC_sample_length+c])
-               square_ABC = add_ABC**2
-               square_sum_ABC[i] = np.sum(square_ABC)
-               delays[i] = [chunk*TISC_sample_length,b,c]
-               i += 1
+         #for b in range(b_lower_index_limit,len(a_dig_waveform)-TISC_sample_length):
+            #for c in range(c_lower_index_limit,len(a_dig_waveform)-TISC_sample_length):
+               #this_sum = 0
+               #add_AB = np.add(a_dig_waveform[chunk*TISC_sample_length:(chunk*TISC_sample_length)+TISC_sample_length],b_dig_waveform[b:TISC_sample_length+b])
+               #add_ABC = np.add(add_AB,c_dig_waveform[c:TISC_sample_length+c])
+               #square_ABC = add_ABC**2
+               #square_sum_ABC[i] = np.sum(square_ABC)
+               #delays[i] = [chunk*TISC_sample_length,b,c]
+               #i += 1
                #print "a: "+str(chunk*TISC_sample_length)+":"+str((chunk*TISC_sample_length)+TISC_sample_length)+"\tb: "+str(b)+":"+str(b+TISC_sample_length)+"\tc: "+str(c)+":"+str(c+TISC_sample_length)
                   
-      total_sum = np.add(square_sum_ABC,previous_square_sum)
-      max_total_sum = np.amax(total_sum)
-      best_delays = delays[np.argmax(total_sum)]
+      #total_sum = np.add(square_sum_ABC,previous_square_sum)
+      #max_total_sum = np.amax(total_sum) - average_signal
+      #best_delays = delays[np.argmax(total_sum)]
       
       #print total_sum
-      print "Max sum: " +str(max_total_sum)
+      print "DONT USE THESE DELAYS!!!"
       #print best_delays
 
    if(max_total_sum > threshold):
@@ -181,7 +189,7 @@ def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig
    #print "B Delay: " + str(best_b_delay)#+'\t'+str(b_input_delay-best_b_delay)
    #print "C Delay: " + str(best_c_delay)#+'\t'+str(c_input_delay-best_c_delay)
    #print "\n\n"
-   return trigger_flag, max_total_sum, new_average_signal
+   return trigger_flag, unsubtracted_max_total_sum
 
 
 if __name__ == '__main__':

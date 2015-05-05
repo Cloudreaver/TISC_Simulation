@@ -3,7 +3,7 @@
 # A very simple impulsive signal + noise generator to get the 
 
 import random
-from array import array
+#from array import array
 import numpy as np
 from impulse import impulse_gen, butter_bandpass_filter, butter_bandpass
 from noise import generate_noise
@@ -19,7 +19,7 @@ def avg_subtract_TISC_sim(SNR,threshold,
              peak_amplitude=25.0,carrier_frequency=260000000.0,modulation_frequency=16000000.0,
              seed=5522684,draw_flag=0,digitization_factor=1,
              delay_type_flag=1,
-             output_dir="output/",average_signal=20.0):
+             output_dir="output/",average_signal=150):
    
                            
 
@@ -38,8 +38,8 @@ def avg_subtract_TISC_sim(SNR,threshold,
    a_input_noise = np.zeros(num_upsamples)
    b_input_noise = np.zeros(num_upsamples)
    c_input_noise = np.zeros(num_upsamples)
-   time = np.zeros(num_samples)
-   upsampled_time = np.zeros(num_upsamples)
+   #time = np.zeros(num_samples)
+   #upsampled_time = np.zeros(num_upsamples)
    a_input_signal = np.zeros(num_upsamples)
    b_input_signal = np.zeros(num_upsamples)
    c_input_signal = np.zeros(num_upsamples)
@@ -50,16 +50,14 @@ def avg_subtract_TISC_sim(SNR,threshold,
    b_dig_waveform = np.zeros(num_samples)
    c_dig_waveform = np.zeros(num_samples)
    empty_list = np.zeros(num_upsamples)
-   
    new_average_signal =0
  
-   
-   
-   for i in range(0,num_upsamples):
-      upsampled_time[i] = (i/(sample_freq*upsample))*(10**9)
+   #if (updample>1):
+      #for i in range(0,num_upsamples):
+         #upsampled_time[i] = (i/(sample_freq*upsample))*(10**9)
 
-   for i in range(0,num_samples):
-      time[i] = (i/(sample_freq))*(10**9)
+   #for i in range(0,num_samples):
+      #time[i] = (i/(sample_freq))*(10**9)
 
 ###################################
    # Generate Thermal Noise
@@ -71,12 +69,8 @@ def avg_subtract_TISC_sim(SNR,threshold,
 
 #####################################
    # Determine RMS of noise and signal amplitude
-
-   noise_rms = np.sqrt(np.mean((a_input_noise-noise_mean)**2,))
-   
-   
+   noise_rms = np.sqrt(np.mean((a_input_noise-noise_mean)**2,))   
    signal_amp = SNR*2*noise_rms
-
 #####################################
    
    
@@ -91,14 +85,8 @@ def avg_subtract_TISC_sim(SNR,threshold,
 
       c_input_cw_noise = generate_cw(num_samples,upsample,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
       c_input_noise += c_input_cw_noise
-
 #####################################
-
-   #new_average_signal = np.sqrt(np.mean((a_input_noise-noise_mean)**2,))
-      #print a_input_noise-noise_mean
-      #print (a_input_noise-noise_mean)**2
-      #print np.mean((a_input_noise-noise_mean)**2,)
-      #print np.sqrt(np.mean((a_input_noise-noise_mean)**2,))
+ 
  
 #####################################
    # Generate impulse
@@ -126,6 +114,7 @@ def avg_subtract_TISC_sim(SNR,threshold,
       c_input_signal_noise = c_input_noise
 ##########################################
 
+
 ##########################################
    # Digitized the incoming signal and noise (RITC)
    a_dig_waveform = digitize(a_input_signal_noise,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor)
@@ -134,12 +123,12 @@ def avg_subtract_TISC_sim(SNR,threshold,
 
 ##########################################
 
+
 ##########################################
    # Run the signal through the GLITC module to get trigger
-   trigger_flag, max_sum, new_average_signal = avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,average_signal=average_signal)
-   #print average_signal
-   #print new_average_signal
+   trigger_flag, max_sum = avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,average_signal=average_signal)
 #########################################
+
 
 #########################################
    # Output data
@@ -152,9 +141,8 @@ def avg_subtract_TISC_sim(SNR,threshold,
    if draw_flag:
       
       dummy = raw_input('Press any key to close')
-      p
 
-   return trigger_flag, max_sum, new_average_signal
+   return trigger_flag, max_sum
 
 if __name__ == '__main__':
    #import ROOT

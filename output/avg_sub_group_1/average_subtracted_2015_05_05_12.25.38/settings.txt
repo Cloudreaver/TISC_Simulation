@@ -1,0 +1,20 @@
+TISC simulation using new signal averaging systemInput parameters for TISC simulation
+
+Start time: 2015_05_05_12.25.38
+Number of events per run: 100
+Number of samples per event: 74
+Impulse Position: 5
+Using GLITC Delays
+Adding CW Noise
+CW Frequency: 260000000.0
+Modulation Frequency: 16000000.0
+CW Amplitude: 30.0
+Ch B Input Delay: 0
+Ch C Input Delay: 0
+Noise Mean: 0.0
+Noise Sigma: 20.0
+Minimum Threshold: 0.0
+Maximum Threshold: 600.0
+Threshold Step: 25.0
+Simulation Rate: 100.0
+Impulsive Event Rate: 100.0
