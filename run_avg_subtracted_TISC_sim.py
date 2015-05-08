@@ -17,7 +17,7 @@ if __name__ == '__main__':
 	#print start_time
 	#############################################################
 	# Parameters
-	num_events = 10000        		# Number of events to generate per threshold
+	num_events = 10000         		# Number of events to generate per threshold
 	simulation_rate = 200.0   			# Simulation speed
 	event_rate= 100.0			 		# Rate to generate impulseive events
 	num_runs = int(num_events*(simulation_rate/event_rate))
