@@ -2,19 +2,23 @@
 
 if __name__ == '__main__':
 	import time
+	from datetime import datetime
 	import os
 	from avg_subtract_TISC_sim import avg_subtract_TISC_sim
 	from TISC_sim import TISC_sim
 	import numpy as np
 	#import subprocess as Popen
 	#from array import array
+	#import matplotlib
+	#matplotlib.use('Agg')
 	import matplotlib.pyplot as plt
 	
-	
+	start_time = datetime.now()
+	#print start_time
 	#############################################################
 	# Parameters
-	num_events = 2		           		# Number of events to generate per threshold
-	simulation_rate = 100.0   			# Simulation speed
+	num_events = 10000        		# Number of events to generate per threshold
+	simulation_rate = 200.0   			# Simulation speed
 	event_rate= 100.0			 		# Rate to generate impulseive events
 	num_runs = int(num_events*(simulation_rate/event_rate))
 	num_samples = 74                 	# Length of Signal Window
@@ -25,9 +29,9 @@ if __name__ == '__main__':
 	delay_type_flag = 1              	# 1=use GLITC delays, 0=all possible delays
 	cw_flag = False
 	carrier_frequency=260000000.0    	# Hz
-	modulation_frequency=16000000.0  	# Hz
-	peak_amplitude = 2.0*noise_sigma 	# Peak amplitude in mV
-	save_output = True
+	modulation_frequency=1.0  			# Hz
+	peak_amplitude = 0.25*noise_sigma 	# Peak amplitude in mV
+	save_output = False
 	max_sum_memory = 4					# Number of max sums to average over
 	
 
@@ -36,9 +40,11 @@ if __name__ == '__main__':
 	c_input_delay = 0                	# Ch C signal offset
 	SNR = 3.0							# SNR of impulsive signal
 
-	low_threshold = 0.0              	# Lowest Threshold
-	high_threshold = 100.0           	# Highest Threshold
-	step_threshold = 25.0            	# Threshold Interval
+	low_threshold = 0              	# Lowest Threshold
+	high_threshold = 1000          	# Highest Threshold
+	step_threshold = 1            	# Threshold Interval
+	
+	max_sum_offset = 150
 	#############################################################
 
 
@@ -48,24 +54,28 @@ if __name__ == '__main__':
 	average_subtracted_trigger_number = np.zeros(len(threshold))
 	trigger_rate = np.zeros(len(threshold))
 	trigger_number = np.zeros(len(threshold))
-	average_subtracted_noise_trigger_rate = np.zeros(len(threshold))
-	average_subtracted_noise_trigger_number = np.zeros(len(threshold))
-	noise_trigger_rate = np.zeros(len(threshold))
-	noise_trigger_number = np.zeros(len(threshold))
-	#average_signal=0
-	average_subtracted_signal_max_sum=0
-	#average_subtracted_noise_max_sum =0
-	average_subtracted_signal_event_flag = 0
-	average_subtracted_signal_noise_flag = 0
-	mean_noise_max_sum = 0
-	average_noise_max_sum = np.array([140,140,140,140])#np.zeros(max_sum_memory)
+	
+	if(cw_flag):
+		average_subtracted_cw_thermal_trigger_rate = np.zeros(len(threshold))
+		average_subtracted_cw_thermal_trigger_number = np.zeros(len(threshold))
+		cw_thermal_trigger_rate = np.zeros(len(threshold))
+		cw_thermal_trigger_number = np.zeros(len(threshold))
+	
+	average_subtracted_thermal_trigger_rate = np.zeros(len(threshold))
+	average_subtracted_thermal_trigger_number = np.zeros(len(threshold))
+	thermal_trigger_rate = np.zeros(len(threshold))
+	thermal_trigger_number = np.zeros(len(threshold))
+	
+	fifty_percent = np.zeros(len(threshold))
+	
+	
    
 	# Write settings file
 	if(save_output):
 		if (cw_flag):
-			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_num"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_CW"+str(peak_amplitude/noise_sigma)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_RUNS"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
 		else:
-			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_cw"+str(peak_amplitude/noise_sigma)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_num"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_RUNS"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
 		print output_dir
 		if not os.path.exists(output_dir):
 			os.makedirs(output_dir)
@@ -83,6 +93,8 @@ if __name__ == '__main__':
 			settings_filename.write("\nCW Frequency: " +str(carrier_frequency))
 			settings_filename.write("\nModulation Frequency: " + str(modulation_frequency))
 			settings_filename.write("\nCW Amplitude: " + str(peak_amplitude))
+		else:
+			settings_filename.write("\nNo CW added")
 	   
 		settings_filename.write("\nCh B Input Delay: " + str(b_input_delay))
 		settings_filename.write("\nCh C Input Delay: " + str(c_input_delay))
@@ -93,127 +105,144 @@ if __name__ == '__main__':
 		settings_filename.write("\nThreshold Step: " + str(step_threshold))
 		settings_filename.write("\nSimulation Rate: " + str(simulation_rate))
 		settings_filename.write("\nImpulsive Event Rate: " + str(event_rate))
+		settings_filename.write("\nSNR: " +str(SNR))
 
 		if(save_output):
 			data_filename = open(output_dir+"/output.dat","w")
-   
-	# Step over all desired thresholds
-	for threshold_counter in range(0,len(threshold)):
-		print "Starting threshold "+str(threshold[threshold_counter])
-	   
-		# Step over time.
-		for timestep in range(0,num_runs):
 			
-			# Shift the average sum array to make room for new value
-			average_noise_max_sum = np.roll(average_noise_max_sum,1)
-				
-			# Generate signal are event rate
-			if(timestep % int((simulation_rate/event_rate)) ==0):
-				#print "\nSending impulsive signal, timestep "+str(timestep)
-				# Average subtracted impulsive event
-				average_subtracted_event_passed_flag, average_subtracted_signal_max_sum = avg_subtract_TISC_sim(SNR,threshold[threshold_counter],
-						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean,
-						draw_flag=draw_flag,average_signal=mean_noise_max_sum)
-				
-				# Non subtracted impulseive event
-				event_passed_flag, signal_max_sum = TISC_sim(SNR,threshold[threshold_counter],
-						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean)
-				
-				# Average subtracted noise event
-				average_subtracted_noise_passed_flag,average_noise_max_sum[0] = avg_subtract_TISC_sim(0.0,threshold[threshold_counter],
-						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean,
-						draw_flag=draw_flag,average_signal=mean_noise_max_sum)
-						
-				# non subtracted noise event					
-				noise_passed_flag, noise_max_sum = TISC_sim(0.0,threshold[threshold_counter],
-						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean)
-							
-			# Generate noise event when impulsive event is not called for
-			else:
-				#print "\nSending background signal, timestep "+str(timestep)
-				# Average subtracted noise event
-				average_subtracted_noise_passed_flag,average_noise_max_sum[0] = avg_subtract_TISC_sim(0,threshold[threshold_counter],
-						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean,
-						draw_flag=draw_flag,average_signal=mean_noise_max_sum)
-						
-				# Copy over values for subtracting on next iteration
-				average_subtracted_event_passed_flag = average_subtracted_noise_passed_flag
-						
-				# Non subtracted noise event					
-				noise_passed_flag, noise_max_sum = TISC_sim(0.0,threshold[threshold_counter],
-						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean)
-						
-				# Copy over values for 
-				event_passed_flag = noise_passed_flag
-				event_max_sum = noise_max_sum		
-			# Exit (event or noise) if statement
-			
-			# Take the mean of the max sum array
-			mean_noise_max_sum = np.mean(average_noise_max_sum)
-				
-			# If trigger was seen, add it the trigger number					
-			if(average_subtracted_event_passed_flag):
-				average_subtracted_trigger_number[threshold_counter] +=1
-			if(event_passed_flag):
-				trigger_number[threshold_counter] +=1
-			if(average_subtracted_noise_passed_flag):
-				average_subtracted_noise_trigger_number[threshold_counter] +=1
-			if(noise_passed_flag):
-				noise_trigger_number[threshold_counter] +=1
-				
-			#print average_subtracted_trigger_number[threshold_counter]
-			#print trigger_number[threshold_counter]
-			#print average_subtracted_noise_trigger_number[threshold_counter]
-			#print noise_trigger_number[threshold_counter]
-			#print "\n"
-		# Exit timestep loop
+	as_cw_thermal_max_sum = np.array([140,140,140,140])#np.zeros(max_sum_memory)
+	as_thermal_max_sum = np.array([140,140,140,140])
+	mean_cw_thermal_max_sum = 140
+	mean_thermal_max_sum = 140
 		
-		if(save_output):
-			data_filename.write(str(threshold[threshold_counter])+','+str(average_subtracted_trigger_number[threshold_counter])+','+str(trigger_number[threshold_counter])+','+str(average_subtracted_noise_trigger_number[threshold_counter])+','+str(noise_trigger_number[threshold_counter]))
-	# Exit threshold counter loop	
+	# Step over time.
+	for timestep in range(0,num_runs):
+		print "\nStarting timestep: "+str(timestep)
+		average_subtracted_signal_max_sum = 0
+		thermal_max_sum = 0
+		cw_thermal_max_sum = 0
+		signal_max_sum = 0
+
+		as_cw_thermal_max_sum = np.roll(as_cw_thermal_max_sum,1)
+		as_thermal_max_sum = np.roll(as_thermal_max_sum,1)
+	
+		# Non-subtracted thremal event					
+		thermal_passed_flag, thermal_max_sum = avg_subtract_TISC_sim(0.0,100,
+				impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
+				cw_flag=0,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+				noise_sigma=noise_sigma,noise_mean=noise_mean)
+				
+		# A bit of cheating here, if an impulsive or cw event is called for, these values will be overwritten
+		as_thermal_max_sum[0] = thermal_max_sum-mean_thermal_max_sum+max_sum_offset
+		as_cw_thermal_max_sum[0] = thermal_max_sum
+		average_subtracted_signal_max_sum = as_thermal_max_sum[0]
+		signal_max_sum = thermal_max_sum
+		
+		
+		if(cw_flag):
+					
+			# Non-subtracted CW + thermal noise event					
+			cw_thermal_passed_flag, cw_thermal_max_sum = avg_subtract_TISC_sim(0.0,100,
+					impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
+					cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+					noise_sigma=noise_sigma,noise_mean=noise_mean)
+			as_cw_thermal_max_sum[0] = cw_thermal_max_sum-mean_cw_thermal_max_sum+max_sum_offset
+			
+			# A bit of cheating here, if an impulsive event is called for, these values will be overwritten
+			average_subtracted_signal_max_sum = as_cw_thermal_max_sum[0]
+			signal_max_sum = cw_thermal_max_sum
+			
+		# Generate signal at event rate
+		if(timestep % int((simulation_rate/event_rate)) ==0):
+			#print "Sending impulsive signal, timestep "+str(timestep)
+				
+			# Non-subtracted impulseive event
+			event_passed_flag, signal_max_sum = avg_subtract_TISC_sim(SNR,100,
+						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,
+						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+						noise_sigma=noise_sigma,noise_mean=noise_mean)
+			average_subtracted_signal_max_sum = signal_max_sum - mean_cw_thermal_max_sum+max_sum_offset
+				
+		
+		# Take the mean of the max sum array
+		mean_cw_thermal_max_sum = np.mean(as_cw_thermal_max_sum)
+		mean_thermal_max_sum = np.mean(as_thermal_max_sum)
+		
+		#print average_subtracted_signal_max_sum
+		#print as_cw_thermal_max_sum[0]
+		#print as_thermal_max_sum[0]
+		# Step over all desired thresholds
+		for threshold_counter in range(0,len(threshold)):
+			#print "Starting threshold "+str(threshold[threshold_counter])
+			
+			fifty_percent[threshold_counter] = (0.5*event_rate)
+			print fifty_percent[threshold_counter]
+			
+			# If trigger was seen, add it the trigger number					
+			if((average_subtracted_signal_max_sum>threshold[threshold_counter])):
+				average_subtracted_trigger_number[threshold_counter] +=1
+			if((signal_max_sum>threshold[threshold_counter])):
+				trigger_number[threshold_counter] +=1
+			if(cw_flag):
+				if((as_cw_thermal_max_sum[0]>threshold[threshold_counter])):
+					average_subtracted_cw_thermal_trigger_number[threshold_counter] +=1
+				if(cw_thermal_max_sum>threshold[threshold_counter]):
+					cw_thermal_trigger_number[threshold_counter] +=1
+			if(as_thermal_max_sum[0]>threshold[threshold_counter]):
+				average_subtracted_thermal_trigger_number[threshold_counter] +=1
+			if(thermal_max_sum>threshold[threshold_counter]):
+				thermal_trigger_number[threshold_counter] +=1
+			
+	# Exit timestep loop
+	
+	if(save_output):
+		for threshold_counter in range(0,len(threshold)):
+			if(cw_flag):
+				data_filename.write(str(threshold[threshold_counter])+','+str(average_subtracted_trigger_number[threshold_counter])+','+str(trigger_number[threshold_counter])+','+str(average_subtracted_cw_thermal_trigger_number[threshold_counter])+','+str(cw_thermal_trigger_number[threshold_counter])+','+str(average_subtracted_thermal_trigger_number[threshold_counter])+','+str(thermal_trigger_number[threshold_counter])+"\n")
+			else:
+				data_filename.write(str(threshold[threshold_counter])+','+str(average_subtracted_trigger_number[threshold_counter])+','+str(trigger_number[threshold_counter])+','+str(average_subtracted_thermal_trigger_number[threshold_counter])+','+str(thermal_trigger_number[threshold_counter])+"\n")	
 		
 	# Calculate trigger rates from number of triggers and the simulation rate
 	average_subtracted_trigger_rate = (average_subtracted_trigger_number/num_runs)*simulation_rate
 	trigger_rate = (trigger_number/num_runs)*simulation_rate
-	average_subtracted_noise_trigger_rate = (average_subtracted_noise_trigger_number/num_runs)*simulation_rate
-	noise_trigger_rate = (noise_trigger_number/num_runs)*simulation_rate
+	if(cw_flag):
+		average_subtracted_cw_thermal_trigger_rate = (average_subtracted_cw_thermal_trigger_number/num_runs)*simulation_rate
+		cw_thermal_trigger_rate = (cw_thermal_trigger_number/num_runs)*simulation_rate
+	average_subtracted_thermal_trigger_rate = (average_subtracted_thermal_trigger_number/num_runs)*simulation_rate
+	thermal_trigger_rate = (thermal_trigger_number/num_runs)*simulation_rate
 	
 
 	
 	# Make all the plots	
-	plt.figure(1)
+	plt.figure(num=None, figsize=(16, 12))
 	plt.clf()
 	plt.axis([np.amin(threshold),np.amax(threshold),0,(simulation_rate*1.5)])
 	ax= plt.gca()
 	ax.set_autoscale_on(False)
-	plt.plot(threshold,average_subtracted_trigger_rate,'r',threshold,trigger_rate,'b',threshold,average_subtracted_noise_trigger_rate,'r--',threshold,noise_trigger_rate,'b--')
+	#ax.set_yscale('log')
+	plt.grid(True)
+	if(cw_flag):
+		plt.semilogy(threshold,fifty_percent,'k',threshold,average_subtracted_trigger_rate,'r',threshold,trigger_rate,'b',threshold,average_subtracted_cw_thermal_trigger_rate,'r--',threshold,cw_thermal_trigger_rate,'b--',threshold,average_subtracted_thermal_trigger_rate,'r:',threshold,thermal_trigger_rate,'b:')
+	else:
+		plt.semilogy(threshold,fifty_percent,'k',threshold,average_subtracted_trigger_rate,'r',threshold,trigger_rate,'b',threshold,average_subtracted_thermal_trigger_rate,'r--',threshold,thermal_trigger_rate,'b--')
 	plt.title("SNR Curves for "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
 	plt.xlabel("Threshold [DAC Counts]")
 	plt.ylabel("Trigger Rate [Hz]")
+	plt.ylim(0.0,simulation_rate*2)
 	if (cw_flag):
-		ax.legend((("Avg. Subtract SNR "+str(SNR)+" CW "+str(peak_amplitude/noise_sigma)),("Non-subtracted SNR "+str(SNR)+" CW "+str(peak_amplitude/noise_sigma)),"Avg. Subtracted Noise","Non-subtracted Noise"))
+		ax.legend((("50% Efficient"),("Avg. Subtract SNR "+str(SNR)+" CW "+str(peak_amplitude/noise_sigma)),("Non Subtracted SNR "+str(SNR)+" CW "+str(peak_amplitude/noise_sigma)),"Avg. Subtracted CW+Thermal","Non Subtracted CW+Thermal","Avg. Subtracted Thermal","Non Subtracted Thermal"))
 		if(save_output):
 			plt.savefig(output_dir+"/avg_sub_cw_"+str(peak_amplitude/noise_sigma)+".png")	
 	else:
-		ax.legend((("Avg. Subtract SNR "+str(SNR)),("Non-Subtracted SNR "+str(SNR)),"Avg. Subtracted Noise","Non-Subtracted Noise"))
+		ax.legend((("50% Efficient"),("Avg. Subtract SNR "+str(SNR)),("Non Subtracted SNR "+str(SNR)),"Avg. Subtracted Thermal","Non Subtracted Thermal"))
 		if(save_output):
 			plt.savefig(output_dir+"/avg_sub_vs_non_sub.png")
+	print datetime.now() - start_time
 	plt.show()
 	
 	# Close open files
 	if(save_output):
 		settings_filename.close()
 		data_filename.close()
+	
            

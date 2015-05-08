@@ -7,7 +7,7 @@ import numpy as np
 
 
 
-def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0,average_signal=0):
+def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0):
    
    #speed_of_light = 2.99*10**8
    #sample_period = 3.5810**(-10)
@@ -128,11 +128,11 @@ def avg_subtracted_sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig
       # Add all the two sums for each delay
       total_sum = np.add(square_sum_ABC,previous_square_sum)
       # Find the maximum sum
-      max_total_sum = np.amax(total_sum)
-      unsubtracted_max_total_sum = max_total_sum
-      max_total_sum += max_sum_shift
+      #max_total_sum = np.amax(total_sum)
+      #unsubtracted_max_total_sum = max_total_sum
+      #max_total_sum += max_sum_shift
       #print "Unsubtracted: "+str(max_total_sum)
-      max_total_sum -= average_signal
+      #max_total_sum -= average_signal
       #print "Subtracted: "+str(max_total_sum)
       #if (max_total_sum < 0):
          #max_total_sum = 0

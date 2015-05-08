@@ -58,7 +58,7 @@ if __name__ == '__main__':
     upsample = 1
     sample_frequency =    2800000000.0
     carrier_frequency =    260000000.0 # Dominant freq. seen in ANITA3
-    modulation_frequency =  16700000.0 # Common mod. freq. seen in ANITA3
+    modulation_frequency =  1.0 
     peak_amplitude = 25.0
     filter_flag = True
 

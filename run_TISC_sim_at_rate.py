@@ -12,12 +12,13 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_runs = 10000                # Number of events to generate per loop
+   num_events = 10000               # Number of events to generate per loop
    upsample = 1                     # Upsamping factor
    digitization_factor = 1.0        # Digitization factor( *Noise_RMS)
    num_bits = 3                     # Number of bits available to digitizer
-   max_trigger_rate = 162500000.0   # TISC Clock Speed
-   event_rate=0.25*max_trigger_rate # Rate to generate events
+   simulation_rate = 100.0          # Simulation Rate
+   event_rate=100.0                 # Rate to generate events
+   num_runs = int(num_events*(simulation_rate/event_rate)) 
    num_samples = 74                 # Length of Signal Window
    noise_sigma = 20.0
    noise_mean = 0.0
@@ -36,19 +37,14 @@ if __name__ == '__main__':
 
    low_SNR = 0.0                    # Lowest SNR
    high_SNR = 8.0                   # Highest SNR
-   step_SNR = 1.0                   # SNR interval
+   step_SNR = 1.0                 # SNR interval
 
-   low_threshold = 0.0              # Lowest Threshold
-   high_threshold = 800.0           # Highest Threshold
-   step_threshold = 25.0            # Threshold Interval
-
-   #low_event_rate = 1.0
-   #high_event_rate = 200000000.0
-   #num_event_rate = 10
+   low_threshold = 0              # Lowest Threshold
+   high_threshold = 800          # Highest Threshold
+   step_threshold = 1           # Threshold Interval
    #############################################################
    
    # Set some variables
-   time_since_last_trigger = float(0.0) #Time since last trigger
    num_upsamples = upsample*num_samples # Number of upsampled samples
    line_color = 1
    
@@ -124,32 +120,6 @@ if __name__ == '__main__':
    multigraph = TMultiGraph('SNR_Graph','SNR_Graph')
    
    
-   outfile = TFile(output_dir+"/TISC_SNR.root","RECREATE")
-   tree = TTree("TISC_SIM", "TISC_SIM")
-   #SNR_hist[1] = ROOT.TH1D('TISC_SNR','TISC SNR Curves',high_threshold/step_threshold,low_threshold,high_threshold)
-   #SNR_hist[0] = ROOT.TH1D('TISC_SNR','TISC SNR Curves',len(threshold),low_threshold,high_threshold)
-   #SNR_hist[0].SetMinimum(-0.5)
-   #SNR_hist[0].SetMaximum(num_runs*1.1)
-   #SNR_hist[0].GetYaxis().SetTitle("Counts")
-   #SNR_hist[0].GetXaxis().SetTitle("Threshold")
-   #SNR_hist[0].Draw()
-   x = np.linspace(low_threshold,high_threshold,len(threshold))
-   y = max_trigger_rate+0*x
-   max_trigger_rate_graph = TGraph(len(x),x,y)
-   max_trigger_rate_graph.SetLineColor(20)
-   max_trigger_rate_graph.SetName("Maximum Trigger Rate")
-   max_trigger_rate_graph.SetTitle("Maximum Trigger Rate")
-   multigraph.Add(max_trigger_rate_graph)
-   max_trigger_rate_graph.Write()
-
-   z = event_rate+0*x
-   event_rate_graph = TGraph(len(x),x,z)
-   event_rate_graph.SetLineColor(46)
-   event_rate_graph.SetName("Event Rate")
-   event_rate_graph.SetTitle("Event Rate")
-   multigraph.Add(event_rate_graph)
-   event_rate_graph.Write()
-   
    SNR_counter = 0
    threshold_counter = 0
    #tree.Branch('SNR',SNR[SNR_counter])
@@ -159,62 +129,62 @@ if __name__ == '__main__':
 
    data_filename = open(output_dir+"/output.dat","w")
    
-   threshold_for_branch = np.zeros(1)
+   #threshold_for_branch = np.zeros(1)
    # Start Loop over SNR values
    for SNR_counter in range(0,len(SNR)):
       #print "\nStarting SNR of "+str(SNR[SNR_counter])
       SNR_Hist[SNR_counter] = TH1F('SNR_'+str(SNR[SNR_counter]),'SNR_'+str(SNR[SNR_counter]),len(threshold),low_threshold,high_threshold)
-      tree.Branch('SNR_'+str(SNR[SNR_counter]),threshold_for_branch,'SNR_'+str(SNR[SNR_counter])+'/D')
+      #tree.Branch('SNR_'+str(SNR[SNR_counter]),threshold_for_branch,'SNR_'+str(SNR[SNR_counter])+'/D')
       
       # Start loop over threshold values
-      for threshold_counter in range(0,len(threshold)):
+      
          # Reset values
-         trigger_rate[threshold_counter] = 0 
-         time_since_last_trigger = 2.0*(1.0/event_rate)
-         num_passed_events[threshold_counter] = 0
-         
+      trigger_rate[threshold_counter] = 0 
+      time_since_last_trigger = 2.0*(1.0/event_rate)
+      num_passed_events = np.zeros(len(threshold))
+      
 
-         # Start loop over events
-         for runNum in range(0,num_runs):
-            event_passed_flag = 0 # Reset value
-            # Check to see if trigger is available
-            if (time_since_last_trigger >= (1.0/max_trigger_rate)):
-               # Run TISC code
-               #print "SNR: "+str(SNR[SNR_counter])
-               #print "Threshold: "+str(threshold[threshold_counter])
-               
-               event_passed_flag = TISC_sim(SNR[SNR_counter],threshold[threshold_counter],
-                                            impulse_pos,b_input_delay,c_input_delay,num_bits=num_bits,delay_type_flag=delay_type_flag,upsample=upsample,num_samples=num_samples,
-                                            cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-                                            noise_sigma=noise_sigma,noise_mean=noise_mean,
-                                            draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir=output_dir)
-               # Check to see if event passed
-               if(event_passed_flag):
-                  threshold_for_branch[0]=threshold[threshold_counter]
-                  num_passed_events[threshold_counter] += 1
-                  SNR_Hist[SNR_counter].Fill(threshold[threshold_counter])
-                  time_since_last_trigger = 1.0/event_rate
-                  tree.Fill()
-            else:
-               time_since_last_trigger = time_since_last_trigger + 1.0/event_rate
-            #print "Number of passed events: "+str(num_passed_events[threshold_counter])
-         # Close of Event Loop
-         
+      # Start loop over events
+      for timestep in range(0,num_runs):
+         event_passed_flag = 0 # Reset value
+         max_sum = 0
+
+         # Check to see if trigger is available
+         if ((timestep % int((simulation_rate/event_rate)) == 0)):
+            #print "Generating impulsive event"
+            event_passed_flag, max_sum = TISC_sim(SNR[SNR_counter],100,
+                                         impulse_pos,b_input_delay,c_input_delay,num_bits=num_bits,delay_type_flag=delay_type_flag,upsample=upsample,num_samples=num_samples,
+                                         cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+                                         noise_sigma=noise_sigma,noise_mean=noise_mean,
+                                         draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir=output_dir)
+         else:
+            #print "Generating Noise Event"
+            event_passed_flag, max_sum = TISC_sim(0.0,100,
+                                         impulse_pos,b_input_delay,c_input_delay,num_bits=num_bits,delay_type_flag=delay_type_flag,upsample=upsample,num_samples=num_samples,
+                                         cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+                                         noise_sigma=noise_sigma,noise_mean=noise_mean,
+                                         draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir=output_dir)
+      
+         for threshold_counter in range(0,len(threshold)):
+            if(max_sum>threshold[threshold_counter]):
+               #threshold_for_branch[0]=threshold[threshold_counter]
+               num_passed_events[threshold_counter] += 1
+               SNR_Hist[SNR_counter].Fill(threshold[threshold_counter])
+               #print num_passed_events[threshold_counter]
 
 
-
-         # Calculate trigger rate for current threshold
+      # Calculate trigger rate for current threshold
+      for threshold_counter in range(0,len(threshold)):
          trigger_rate[threshold_counter] =(float(num_passed_events[threshold_counter])/float(num_runs))*event_rate
          data_filename.write(str(SNR[SNR_counter])+'\t'+str(threshold[threshold_counter])+'\t'+str(trigger_rate[threshold_counter])+'\n')
          #print str(SNR[SNR_counter])+'\t'+str(threshold[threshold_counter])+'\t'+str(trigger_rate[threshold_counter])
-         #trigger_rate_for_branch[0] = trigger_rate[threshold_counter]
-         #tree.Fill()
+
      
 
       # Close Threshold Loop 
       
       
-      tree.Fill()
+      #tree.Fill()
       
       # Make all the Graphs   
       #SNR_Hist[SNR_counter].Write()
@@ -233,7 +203,7 @@ if __name__ == '__main__':
    # Set up Multigraph and add graphs
    multigraph.SetTitle("TISC SNR Curves (@ "+str(event_rate/(10**6))+" MHz Event Rate); Threshold [~W]; Averaged Trigger Rate [Hz]")
    if(SNR_draw_flag):
-      multigraph.Draw("ACP")
+      multigraph.Draw("AC")
       SNR_canvas.BuildLegend(0.7,0.6,0.99,0.9)
       gPad.Update()
       gPad.Modified()
@@ -246,14 +216,14 @@ if __name__ == '__main__':
       img.FromPad(SNR_canvas)
       img.WriteImage(output_dir+'/TISC_SNR_canvas.png')
 
-      outfile.WriteTObject(SNR_canvas)
+      #outfile.WriteTObject(SNR_canvas)
 
    # Save files and close
-   outfile.Write()
-   outfile.Close()
-   outfile.ls()
+   #outfile.Write()
+   #outfile.Close()
+   #outfile.ls()
    settings_filename.write("\nEnd time: "+str(time.strftime('%Y_%m_%d_%H.%m.%S')))
    settings_filename.close()
    data_filename.close()
-   #if(SNR_draw_flag):
-      #dummy = raw_input('Press any key to close')
+   if(SNR_draw_flag):
+      dummy = raw_input('Press any key to close')

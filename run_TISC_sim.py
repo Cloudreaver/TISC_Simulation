@@ -9,23 +9,23 @@ if __name__ == '__main__':
    import numpy as np
    import subprocess as Popen
 
-   num_samples = 48
+   num_samples = 76
    impulse_pos = 10
    signal_amp = 10
    draw_flag = 0
-   b_input_delay = 3
-   c_input_delay = 5
-   low_SNR = 0.0001
+   b_input_delay = 0
+   c_input_delay = 0
+   low_SNR = 0.0
    high_SNR = 6.0
    step_SNR = 1.0
-   low_threshold = 0.0
-   high_threshold = 350.0
-   step_threshold = 50.0
+   low_threshold = 0
+   high_threshold = 800
+   step_threshold = 1
    num_runs = 5
    upsample = 32
    digitization_factor = 1.0
    num_upsamples = upsample*num_samples
-   delay_type_flag = 0
+   delay_type_flag = 1
 
    # Write settings file
    output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/"+time.strftime('%Y_%m_%d_%H.%m.%S'))
@@ -68,7 +68,7 @@ if __name__ == '__main__':
    
    line_color = 1
    threshold = np.linspace(low_threshold,high_threshold,(high_threshold-low_threshold)/step_threshold+1)
-   print threshold
+   #print threshold
 
    outfile = ROOT.TFile(output_dir+"/TISC_SNR.root","RECREATE")
    #SNR_hist[1] = ROOT.TH1D('TISC_SNR','TISC SNR Curves',high_threshold/step_threshold,low_threshold,high_threshold)
@@ -89,28 +89,29 @@ if __name__ == '__main__':
    legend.Draw("SAME")
 
    SNR = np.linspace(low_SNR,high_SNR,((high_SNR-low_SNR)/step_SNR)+1)
-   print SNR
+   #print SNR
    for SNR_counter in range(0,len(SNR)):
       SNR_hist[SNR[SNR_counter]] = ROOT.TH1D('TISC_SNR_'+str(SNR[SNR_counter]),'TISC SNR Curves',len(threshold),low_threshold,high_threshold)
-      print len(threshold)
-      print low_threshold
-      print high_threshold
-      for threshold_counter in range(0,len(threshold)):
-         for runNum in range(0,num_runs):
-            print"SNR: "+str(SNR[SNR_counter])+"\tThreshold: "+str(threshold[threshold_counter])+"\tRun Number: "+str(runNum)
-            event_passed_flag = 0
-            event_passed_flag = TISC_sim(SNR[SNR_counter],threshold[threshold_counter],
-                                                impulse_pos,b_input_delay,c_input_delay,upsample=upsample,
-                                                num_samples=num_samples,draw_flag=draw_flag,
-                                                digitization_factor=digitization_factor,
-                                                delay_type_flag=delay_type_flag,output_dir=output_dir)
-            if(event_passed_flag):
+      #print len(threshold)
+      #print low_threshold
+      #print high_threshold
+      
+      for runNum in range(0,num_runs):
+         #print"SNR: "+str(SNR[SNR_counter])+"\tThreshold: "+str(threshold[threshold_counter])+"\tRun Number: "+str(runNum)
+         event_passed_flag = 0
+         event_passed_flag, max_sum = TISC_sim(SNR[SNR_counter],100,
+                                             impulse_pos,b_input_delay,c_input_delay,upsample=upsample,
+                                             num_samples=num_samples,draw_flag=draw_flag,
+                                             digitization_factor=digitization_factor,
+                                             delay_type_flag=delay_type_flag,output_dir=output_dir)
+         for threshold_counter in range(0,len(threshold)):
+            if(max_sum>threshold[threshold_counter]):
                SNR_hist[SNR[SNR_counter]].Fill(threshold[threshold_counter])
-               print "This event passed"
-            print ">>>>>>>>>>>>>>>>>"
-      print "Drawing histogram for SNR "+str(SNR[SNR_counter])
+               #print "This event passed"
+            #print ">>>>>>>>>>>>>>>>>"
+      #print "Drawing histogram for SNR "+str(SNR[SNR_counter])
       SNR_hist[SNR[SNR_counter]].SetLineColor(line_color)
-      SNR_hist[SNR[SNR_counter]].Draw("*,C,SAME")
+      SNR_hist[SNR[SNR_counter]].Draw("C,SAME")
       legend.AddEntry(SNR_hist[SNR[SNR_counter]],"SNR="+str(SNR[SNR_counter]),'l')
       legend.Draw("SAME")
       line_color += 1

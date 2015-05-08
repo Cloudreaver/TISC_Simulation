@@ -9,12 +9,12 @@ import numpy as np
 
 def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0):
    
-   speed_of_light = 2.99*10**8
-   sample_period = 3.5810**(-10)
-   ab_distance = 1.0
-   ac_horz_distance = 1.17
-   ac_vert_distance = 4.7
-   ac_distance = np.sqrt((ac_horz_distance)**2+(ac_vert_distance)**2)
+   #speed_of_light = 2.99*10**8
+   #sample_period = 3.5810**(-10)
+   #ab_distance = 1.0
+   #ac_horz_distance = 1.17
+   #ac_vert_distance = 4.7
+   #ac_distance = np.sqrt((ac_horz_distance)**2+(ac_vert_distance)**2)
 
    trigger_flag = 0
    if (delay_type_flag == 1):
@@ -73,6 +73,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
                            [16,14,7],
                            [16,13,12],
                            [16,12,5]])
+      #GLITC_delays = np.array([[0,0,0],[1,0,0]])
    
 ###############################################
 # Do Sum correlation
@@ -140,10 +141,10 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       #print "Max Sum: "+str(max_total_sum)
       #print best_delays
 
-      ab_theta = np.arcsin((speed_of_light*best_delays[1]*sample_period)/ab_distance)
-      ac_theta = np.arctan(ac_vert_distance/ac_horz_distance)-np.pi/2+np.arcsin((speed_of_light*best_delays[2]*sample_period)/ac_distance)
-      ab_theta *= 180/np.pi
-      ac_theta*= 180/np.pi
+      #ab_theta = np.arcsin((speed_of_light*best_delays[1]*sample_period)/ab_distance)
+      #ac_theta = np.arctan(ac_vert_distance/ac_horz_distance)-np.pi/2+np.arcsin((speed_of_light*best_delays[2]*sample_period)/ac_distance)
+      #ab_theta *= 180/np.pi
+      #ac_theta*= 180/np.pi
 
    else:
 
@@ -170,7 +171,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       best_delays = delays[np.argmax(total_sum)]
       
       #print total_sum
-      print "Max sum: " +str(max_total_sum)
+      #print "Max sum: " +str(max_total_sum)
       #print best_delays
 
    if(max_total_sum > threshold):
