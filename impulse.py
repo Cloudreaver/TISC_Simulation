@@ -113,8 +113,8 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
         plt.ylabel("Voltage [mV]")
         plt.title("Impulse Simulation")
         plt.show()
-    
-    return signal, upsample_signal
+    #print len(signal)
+    return signal#, upsample_signal
 
 
 if __name__ == '__main__':
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     from cw import generate_cw
     
     sample_frequency = 2600000000.0
-    sample_length = 32
+    sample_length = 74
     impulse_position = 10
     upsample = 10
     draw_flag = 0
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     
     time = np.linspace(0.0,((sample_length*(10**9))/sample_frequency), sample_length)
     impulse_sample, impulse_upsample = impulse_gen(sample_length,impulse_position,upsample,sample_frequency,draw_flag=draw_flag,output_dir=output_dir)
-    
+    """
     plt.figure(1)
     plt.clf()
     plt.plot(time,impulse_sample[0:sample_length])
@@ -250,6 +250,6 @@ if __name__ == '__main__':
     #plt.xlabel("Time [ns]")
     #plt.ylabel("Voltage [mV]")
     #plt.title("Downsampled Impulse Simulation")
-    
+    """
     
     plt.show()

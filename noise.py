@@ -5,14 +5,14 @@ import random
 from impulse import butter_bandpass_filter
 from scipy.signal import resample
 
-def generate_noise(sample_length,upsample,noise_mean, noise_sigma,filter_flag):
+def generate_noise(sample_length,noise_mean, noise_sigma,filter_flag):
 
-    upsample_length = sample_length*upsample
+    #upsample_length = sample_length*upsample
 
     # Define the noise array
     noise = np.zeros(sample_length)
-    if (upsample > 1.0):
-        resampled_noise = np.zeros(sample_length)
+    #if (upsample > 1.0):
+        #resampled_noise = np.zeros(sample_length)
     
     # Fill array with random gaussian noise
     # May need to switch to using Rayleigh noise
@@ -23,28 +23,28 @@ def generate_noise(sample_length,upsample,noise_mean, noise_sigma,filter_flag):
         noise = butter_bandpass_filter(noise)+noise_mean
 
     # Resample noise if desired
-    if(upsample > 1.0):
-        resampled_noise = resample(noise,upsample_length)
-        return resampled_noise
-    else:
-        return noise
+    #if(upsample > 1.0):
+        #resampled_noise = resample(noise,upsample_length)
+        #return resampled_noise
+    #else:
+    return noise
 
 if __name__ == '__main__':
 	import matplotlib.pyplot as plt
 	import numpy as np
 	sample_length = 74
    
-	upsample = 1
+	#upsample = 1
 	noise_sigma = 100
 	noise_mean = 0
 	filter_flag = True
         run_number = 1
 
-	upsample_length = sample_length*upsample
+	#upsample_length = sample_length*upsample
 
-	noise = np.zeros(upsample_length)
+	noise = np.zeros(sample_length)
         for i in range(0,run_number):
-            noise += generate_noise(sample_length,upsample,noise_mean,noise_sigma,filter_flag)
+            noise += generate_noise(sample_length,noise_mean,noise_sigma,filter_flag)
     
 
         noise /= run_number

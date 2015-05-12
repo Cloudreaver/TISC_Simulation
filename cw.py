@@ -11,20 +11,20 @@ from scipy.signal import resample
 from random import random
 
 
-def generate_cw(sample_length,upsample,sample_frequency, carrier_frequency,modulation_frequency, peak_amplitude,filter_flag=True):
+def generate_cw(sample_length,sample_frequency, carrier_frequency,modulation_frequency, peak_amplitude,filter_flag=True):
 
 
 
     # Make large sample length to avoid edge effects
     expanded_sample_length = sample_length * 2
 
-    upsample_length = sample_length*upsample
+    #upsample_length = sample_length*upsample
 
-    expanded_upsample_length = upsample_length * 2
+    #expanded_upsample_length = upsample_length * 2
     
     # Define the cw array
     cw = np.zeros(expanded_sample_length)
-    resampled_cw = np.zeros(expanded_upsample_length)
+    #resampled_cw = np.zeros(expanded_sample_length)
     M=0.5
 
 
@@ -42,15 +42,15 @@ def generate_cw(sample_length,upsample,sample_frequency, carrier_frequency,modul
     cw = np.roll(cw,phase_shift)
 
     # Define start and end of signal window
-    window_start = expanded_upsample_length/3
-    window_end = window_start+upsample_length
+    window_start = expanded_sample_length/3
+    window_end = window_start+sample_length
 
     # Upsample cw if desired
-    if(upsample > 1.0):
-        resampled_cw = resample(cw,expanded_upsample_length)
-        return resampled_cw[window_start:window_end]
-    else:
-        return cw[window_start:window_end]
+    #if(upsample > 1.0):
+        #resampled_cw = resample(cw,expanded_upsample_length)
+        #return resampled_cw[window_start:window_end]
+    #else:
+    return cw[window_start:window_end]
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
@@ -64,16 +64,16 @@ if __name__ == '__main__':
 
     upsample_length = sample_length*upsample
 
-    cw = np.zeros(upsample_length)
-    t = np.zeros(upsample_length)
+    cw = np.zeros(sample_length)
+    t = np.zeros(sample_length)
 
-    cw = generate_cw(sample_length,upsample,sample_frequency,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+    cw = generate_cw(sample_length,sample_frequency,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
 
     plt.figure(1)
     plt.clf()
     #print (1/sample_frequency)*1000000000.0
     
-    t = np.linspace(0,(1/sample_frequency)*sample_length*1000000000,upsample_length)
+    t = np.linspace(0,(1/sample_frequency)*sample_length*1000000000,sample_length)
 
     plt.plot(t,cw, label='CW Signal')
 

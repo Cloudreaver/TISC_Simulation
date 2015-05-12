@@ -12,7 +12,7 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_events = 10000               # Number of events to generate per loop
+   num_events = 100000             # Number of events to generate per loop
    upsample = 1                     # Upsamping factor
    digitization_factor = 1.0        # Digitization factor( *Noise_RMS)
    num_bits = 3                     # Number of bits available to digitizer
@@ -25,10 +25,11 @@ if __name__ == '__main__':
    draw_flag = False                # 1=draw event graphs, 0=don't                        
    SNR_draw_flag = True             # 1=draw SNR graphs, 0=don't
    delay_type_flag = 1              # 1=use GLITC delays, 0=all possible delays
-   cw_flag = False
+   cw_flag = True
    carrier_frequency=260000000.0    # Hz
-   modulation_frequency=16000000.0  # Hz
-   peak_amplitude = 1.0*noise_sigma #Peak amplitude in mV
+   modulation_frequency=1.0  # Hz
+   cw_factor = 2.0
+   peak_amplitude = cw_factor*noise_sigma #Peak amplitude in mV
    
 
    impulse_pos = 5                  # Position of impulse in Ch A (must be contained within first 32 samples)
@@ -36,12 +37,12 @@ if __name__ == '__main__':
    c_input_delay = 0                # Ch C signal offset
 
    low_SNR = 0.0                    # Lowest SNR
-   high_SNR = 8.0                   # Highest SNR
+   high_SNR = 5.0                   # Highest SNR
    step_SNR = 1.0                 # SNR interval
 
    low_threshold = 0              # Lowest Threshold
-   high_threshold = 800          # Highest Threshold
-   step_threshold = 1           # Threshold Interval
+   high_threshold = 1000          # Highest Threshold
+   step_threshold = 1              # Threshold Interval
    #############################################################
    
    # Set some variables
@@ -61,7 +62,10 @@ if __name__ == '__main__':
    SNR = np.linspace(low_SNR,high_SNR,((high_SNR-low_SNR)/step_SNR)+1)
 
    # Write settings file
-   output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+   if(cw_flag):
+      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_CW"+str(cw_factor)+" Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+   else:
+      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_"+"Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    if not os.path.exists(output_dir):
       os.makedirs(output_dir)
    settings_filename = open(output_dir+"/settings.txt","w")
@@ -115,7 +119,7 @@ if __name__ == '__main__':
    
    
    if(SNR_draw_flag):
-      SNR_canvas = TCanvas('TISC_SNR', "TISC_SNR",800,600)
+      SNR_canvas = TCanvas('TISC_SNR', "TISC_SNR",1600,1200)
       SNR_canvas.SetLogy()
    multigraph = TMultiGraph('SNR_Graph','SNR_Graph')
    
@@ -201,7 +205,10 @@ if __name__ == '__main__':
    # Close SNR Loop
 
    # Set up Multigraph and add graphs
-   multigraph.SetTitle("TISC SNR Curves (@ "+str(event_rate/(10**6))+" MHz Event Rate); Threshold [~W]; Averaged Trigger Rate [Hz]")
+   if (cw_flag):
+      multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate w/ CW @"+str(cw_factor))
+   else:
+      multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate")
    if(SNR_draw_flag):
       multigraph.Draw("AC")
       SNR_canvas.BuildLegend(0.7,0.6,0.99,0.9)
@@ -225,5 +232,5 @@ if __name__ == '__main__':
    settings_filename.write("\nEnd time: "+str(time.strftime('%Y_%m_%d_%H.%m.%S')))
    settings_filename.close()
    data_filename.close()
-   if(SNR_draw_flag):
-      dummy = raw_input('Press any key to close')
+   #if(SNR_draw_flag):
+      #dummy = raw_input('Press any key to close')

@@ -11,7 +11,7 @@ def digitize(input_array,num_samples,upsample,num_bits,noise_mean,noise_rms,digi
          
    # Fill numpy arrays with zeros
    dig_waveform = np.zeros(num_samples)
-   
+   upsample = 1
    # Convert to 3 bit values
    for index in range(0,num_samples):
       for bit_index in range(0,2**(num_bits-1)):
