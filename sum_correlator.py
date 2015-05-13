@@ -8,7 +8,7 @@ import numpy as np
 
 
 def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0):
-   
+   import matplotlib.pyplot as plt
    #speed_of_light = 2.99*10**8
    #sample_period = 3.5810**(-10)
    #ab_distance = 1.0
@@ -114,17 +114,9 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
             b_start_pos = chunk*TISC_sample_length+GLITC_delays[i][1]
             c_start_pos = chunk*TISC_sample_length+GLITC_delays[i][2]
             
-            #print "\nA range: "+str(a_start_pos+TISC_sample_length-1)+":"+str(a_start_pos)
-            #print "B range: "+str(b_start_pos+TISC_sample_length-1)+":"+str(b_start_pos)
-            #print "C range: "+str(c_start_pos+TISC_sample_length-1)+":"+str(c_start_pos)
-            
             # Add each sample at given delay
             add_AB = np.add(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
-            #print len(add_AB)
-            #print add_AB
             add_ABC = np.add(add_AB,c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
-            #print len(add_ABC)
-            #print add_ABC
             square_ABC = add_ABC**2
             square_sum_ABC[i] = np.sum(square_ABC)
 
@@ -184,6 +176,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    #print "B Delay: " + str(best_b_delay)#+'\t'+str(b_input_delay-best_b_delay)
    #print "C Delay: " + str(best_c_delay)#+'\t'+str(c_input_delay-best_c_delay)
    #print "\n\n"
+   
    return trigger_flag, max_total_sum
 
 
@@ -191,13 +184,14 @@ if __name__ == '__main__':
    import numpy as np
    from impulse import impulse_gen
    from digitizer import digitize
+   import matplotlib.pyplot as plt
    threshold = 300
    num_samples = 74
-   upsample = 8
+   upsample = 10
    num_bits = 3
    noise_mean = 0
-   noise_rms = 10
-   SNR = 2
+   noise_rms = 20
+   SNR = 5
    num_upsamples = num_samples*upsample
    a_dig_waveform = np.zeros(num_upsamples)
    a_waveform = np.zeros(num_samples)

@@ -5,12 +5,12 @@
 import random
 #from array import array
 import numpy as np
-from impulse import impulse_gen, butter_bandpass_filter, butter_bandpass
+from impulse import impulse_gen
+from anita_filter import butter_bandpass, butter_bandpass_filter
 from noise import generate_noise
 from digitizer import digitize
 from sum_correlator import sum_correlate
 from cw import generate_cw
-from impulse import butter_bandpass_filter
 from datetime import datetime
 
 def TISC_sim(SNR,threshold,
@@ -21,9 +21,7 @@ def TISC_sim(SNR,threshold,
              peak_amplitude=25.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
              seed=5522684,draw_flag=0,digitization_factor=1,
              delay_type_flag=1,
-             output_dir="output/"):
-   #start_time = datetime.now()
-                           
+             output_dir="output/"):                         
 
    
    # Setup
@@ -33,8 +31,7 @@ def TISC_sim(SNR,threshold,
    trigger_flag = 0
    #num_bits = 3 # Number of bits available to the digitizer
    filter_flag = False
-   #sample_frequency = 2800000000.0
-   
+
    # Fill numpy arrays with zeros
    a_input_noise = np.zeros(num_samples)
    b_input_noise = np.zeros(num_samples)
@@ -46,37 +43,30 @@ def TISC_sim(SNR,threshold,
    b_dig_waveform = np.zeros(num_samples)
    c_dig_waveform = np.zeros(num_samples)
    empty_list = np.zeros(num_samples)
-   #new_average_signal =0
- 
-   #start_thermal = datetime.now()
+
 ###################################
    # Generate Thermal Noise
    a_input_noise = generate_noise(num_samples,noise_mean,noise_sigma,filter_flag)
    b_input_noise = generate_noise(num_samples,noise_mean,noise_sigma,filter_flag)
    c_input_noise = generate_noise(num_samples,noise_mean,noise_sigma,filter_flag)
 ###################################
-   #print "Thermal Noise Generation Took: " +str(datetime.now()-start_thermal)
 
-   #start_rms = datetime.now()
 #####################################
    # Determine RMS of noise and signal amplitude
    noise_rms = np.sqrt(np.mean((a_input_noise-noise_mean)**2,))   
    signal_amp = SNR*2*noise_rms
 #####################################
-   #print "RMS Took: " +str(datetime.now()-start_rms)
-   
-   #start_cw = datetime.now()
+
 #################################
    #Generate CW & thermal noise
    
    if cw_flag:
       a_input_noise = np.add(a_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
 
-      b_input_noise = np.add(b_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
+      b_input_noise = b_input_noise#np.add(b_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
 
-      c_input_noise = np.add(c_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
-   #print "CW Took: " +str(datetime.now()-start_cw)
-   #start_filter = datetime.now()
+      c_input_noise = c_input_noise#np.add(c_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
+
 #####################################
 
    # Filter the noise
@@ -90,17 +80,9 @@ def TISC_sim(SNR,threshold,
    if (SNR != 0):
       # Generate Signal and Amplify
       a_input_signal = impulse_gen(num_samples,impulse_position,upsample,draw_flag=draw_flag,output_dir=output_dir)
-      #print "Length of a 1"+ str(len(a_input_signal))
       difference=np.amax(a_input_signal)-np.amin(a_input_signal) # Get peak to peak voltage
       a_input_signal *= (1/difference) # Normalize input
       a_input_signal *= signal_amp # Amplify
-      #print "Length of a 2"+ str(len(a_input_signal))
-      #print "SNR: " +str(SNR)
-      #print "Noise RMS: " +str(noise_rms)
-      #print "Signal Amp: " +str(signal_amp)
-      #print "Difference: "+str(difference)
-      #print "New signal amp: "+str(np.amax(a_input_signal)-np.amin(a_input_signal))
-      #print len(empty_list[:b_input_delay])+len(a_input_signal[:num_samples-b_input_delay])
       b_input_signal = np.concatenate([empty_list[:b_input_delay],a_input_signal[:num_samples-b_input_delay]])
       c_input_signal = np.concatenate([empty_list[:c_input_delay],a_input_signal[:num_samples-c_input_delay]])
 
@@ -113,8 +95,7 @@ def TISC_sim(SNR,threshold,
       b_input_signal = b_input_noise
       c_input_signal = c_input_noise
 ##########################################
-   #print "Signal Took: " +str(datetime.now()-start_signal)
-   #start_dig = datetime.now()
+
 
 ##########################################
    # Digitized the incoming signal and noise (RITC)
@@ -123,14 +104,13 @@ def TISC_sim(SNR,threshold,
    c_dig_waveform = digitize(c_input_signal,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor)
 
 ##########################################
-   #print "Dig Took: " +str(datetime.now()-start_dig)
-   #start_corr = datetime.now()
+
 
 ##########################################
    # Run the signal through the GLITC module to get trigger
    trigger_flag, max_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag)
 #########################################
-   #print "Corr Took: " +str(datetime.now()-start_corr)
+
 
 #########################################
    # Output data

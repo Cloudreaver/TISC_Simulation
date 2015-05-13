@@ -5,7 +5,6 @@ if __name__ == '__main__':
    import time
    import os
    from TISC_sim import TISC_sim
-   #from impulse import impulse_gen
    import numpy as np
    import subprocess as Popen
    from array import array
@@ -63,7 +62,7 @@ if __name__ == '__main__':
 
    # Write settings file
    if(cw_flag):
-      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_CW"+str(cw_factor)+" Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_CW"+str(cw_factor)+"_Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    else:
       output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_"+"Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    if not os.path.exists(output_dir):
@@ -206,7 +205,7 @@ if __name__ == '__main__':
 
    # Set up Multigraph and add graphs
    if (cw_flag):
-      multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate w/ CW @"+str(cw_factor))
+      multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate w/ CW @ "+str(cw_factor))
    else:
       multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate")
    if(SNR_draw_flag):

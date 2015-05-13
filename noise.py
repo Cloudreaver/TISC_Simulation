@@ -2,17 +2,14 @@
 
 import numpy as np
 import random
-from impulse import butter_bandpass_filter
+from anita_filter import butter_bandpass, butter_bandpass_filter
 from scipy.signal import resample
 
 def generate_noise(sample_length,noise_mean, noise_sigma,filter_flag):
-
-    #upsample_length = sample_length*upsample
+    random.seed()
 
     # Define the noise array
     noise = np.zeros(sample_length)
-    #if (upsample > 1.0):
-        #resampled_noise = np.zeros(sample_length)
     
     # Fill array with random gaussian noise
     # May need to switch to using Rayleigh noise
@@ -22,11 +19,6 @@ def generate_noise(sample_length,noise_mean, noise_sigma,filter_flag):
     if filter_flag:
         noise = butter_bandpass_filter(noise)+noise_mean
 
-    # Resample noise if desired
-    #if(upsample > 1.0):
-        #resampled_noise = resample(noise,upsample_length)
-        #return resampled_noise
-    #else:
     return noise
 
 if __name__ == '__main__':
@@ -48,7 +40,7 @@ if __name__ == '__main__':
     
 
         noise /= run_number
-	t = np.linspace(0,(1/2800000000.0)*sample_length*(10**9),upsample_length)
+	t = np.linspace(0,(1/2800000000.0)*sample_length*(10**9),sample_length)
     
 	plt.figure(1)
 	plt.clf()
