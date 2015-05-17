@@ -4,6 +4,9 @@ Author Name: Ryan Hupe
 SYNOPSYS
 This compilaiton of code simulations the Triggering Interferometric Sum Correlator (TISC) board, planned for use in the fourth flight of the Antarctic Impulsive Transient Antenna (ANITA). 
 
+PREREQUISITES
+Python,Numpy, Scipy, Matplotlib
+
 RUNNING THE SIMULATION
 There are currently ways of running a full simulation of the code. 
 
@@ -39,3 +42,15 @@ batch_loops.sh/avg_sub_batch_loops.sh: These are used to call TISC_sim.sh/avg_su
 TISC_sim.sh/avg_sub_TISC_sim.sh: These scripts actually do the submitting to the cluster. Again, this will only work on kingbee at OSU.
 
 three_phi_sector*: These are a version of TISC_sim that calculates everything for 3 phi sectors instead of just 1. It is still a work in progress.
+
+
+
+TO DO:
+
+Fix the plotting of the SNR curves in TISC_sim.py
+
+Get the average subtracted algorithm working correctly.
+
+Swap antenna A and C. Currently I have the bottom antenna being A and the top being C, this is backwards. This will require some thinking because the way I handle the correlations will probalby have to change.
+
+Get the 3 phi sector version working. This shouldn't be hard, since it is just doing the same thing three times.
