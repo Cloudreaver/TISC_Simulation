@@ -2,81 +2,35 @@
 
 def calculate_angles():
 	
-	import numpy as np
-	
-	GLITC_delays = np.array([[0,30,42],
-                           [0,29,41],
-                           [0,29,40],
-                           [0,28,38],
-                           [0,27,37],
-                           [0,27,36],
-                           [0,26,35],
-                           [0,25,34],
-                           [0,25,33],
-                           [0,24,32],
-                           [0,23,31],
-                           [0,23,30],
-                           [0,22,29],
-                           [0,21,27],
-                           [0,20,26],
-                           [0,20,25],
-                           [0,19,24],
-                           [0,18,23],
-                           [0,18,22],
-                           [0,17,21],
-                           [0,17,20],
-                           [0,16,20],
-                           [0,16,19],
-                           [0,15,18],
-                           [0,15,17],
-                           [0,14,16],
-                           [0,13,15],
-                           [0,13,14],
-                           [0,12,13],
-                           [0,12,12],
-                           [0,11,11],
-                           [0,10,10],
-                           [0,9,9],
-                           [0,8,8],
-                           [0,8,7],
-                           [0,8,6],
-                           [0,7,5],
-                           [0,6,4],
-                           [0,6,3],
-                           [0,5,3],
-                           [0,5,2],
-                           [0,4,1],
-                           [0,0,0],
-                           [16,19,15],
-                           [16,18,14],
-                           [16,18,13],
-                           [16,17,12],
-                           [16,17,11],
-                           [16,16,11],
-                           [16,15,10],
-                           [16,15,9],
-                           [16,14,8],
-                           [16,14,7],
-                           [16,13,12],
-                           [16,12,5]])
-	
-    
+	import numpy as np  
     
 	speed_of_light = 2.99*10**8
-	sample_period = 3.84*10**(-10)
-	ab_distance = 1.0861
+	sample_period = 1.0/2600000000.0
+	
+	#bc_distance = 1.0861
+	
+	ab_top_horz_distance = 1.07721
+	ab_top_vert_distance = 3.66827
+	ab_bot_horz_distance = 1.30454
+	ab_bot_vert_distance = 2.69545
+	
 	ac_top_horz_distance = 1.07721
 	ac_top_vert_distance = 4.75437
 	ac_bot_horz_distance = 1.30454
 	ac_bot_vert_distance = 3.78155
+	
+	ab_top_distance = np.sqrt((ab_top_horz_distance)**2+(ab_top_vert_distance)**2)
+	ab_bot_distance = np.sqrt((ab_bot_horz_distance)**2+(ab_bot_vert_distance)**2)
 	ac_top_distance = np.sqrt((ac_top_horz_distance)**2+(ac_top_vert_distance)**2)
 	ac_bot_distance = np.sqrt((ac_bot_horz_distance)**2+(ac_bot_vert_distance)**2)
-	num_angles = len(GLITC_delays)
-	print "Number of angles: " +str(num_angles)
-	print "Distance from antenna A to B: "+str(ab_distance)
-	print "Distance from antenna A to top C: "+str(ac_top_distance)
-	print "Distance from antenna A to bot C: "+str(ac_bot_distance)
-    
+	#num_angles = len(GLITC_delays)
+	#print "Number of angles: " +str(num_angles)
+	#print "Distance from antenna C to B: "+str(bc_distance)
+	print "Distance from antenna C to top A: "+str(ab_top_distance)
+	print "Distance from antenna C to bot A: "+str(ab_bot_distance)
+	print "Distance from antenna C to top A: "+str(ac_top_distance)
+	print "Distance from antenna C to bot A: "+str(ac_bot_distance)
+	"""
 	for i in range(0,num_angles):
 		
 		ab_theta = np.arcsin((speed_of_light*(GLITC_delays[i][1]-GLITC_delays[i][0])*sample_period)/ab_distance)
@@ -91,11 +45,78 @@ def calculate_angles():
 		print "GLITC delay of "+str(GLITC_delays[i][2])+" means AC Top Angle: "+str(ac_top_theta)
 		print "GLITC delay of "+str(GLITC_delays[i][2])+" means AC Bot Angle: "+str(ac_bot_theta)
 		
-		
-	for i in range(-10,90):
-			ab_delay = int((ab_distance*np.sin(i*(np.pi/180)))/(speed_of_light*sample_period))
-			print "For angle: "+str(i)+ " degrees, the AB_delay should be "+str(ab_delay)
+	"""
+	#bc_delay = np.zeros(100)
+	ab_top_delay = np.zeros(100)
+	ab_bot_delay = np.zeros(100)
+	ac_top_delay = np.zeros(100)
+	ac_bot_delay = np.zeros(100)
+	counter = 0
 	
+	top_outfile = open('GLITC_upper_delays.dat','w')
+	top_outfile.write('A_upper_delay,\tA_upper-B_delay,\tA_upper-C_delay\n')
+	
+	bot_outfile = open('GLITC_lower_delays.dat','w')
+	bot_outfile.write('A_lower_delay,\tA_lower-B_delay,\tA_lower-C_delay\n')
+	
+	lowest_angle = -10
+	highest_angle = 50
+	angle = np.linspace(lowest_angle,highest_angle,100000)
+	#print angle
+	
+	
+	for i in range(0,len(angle)):
+		unique_delay = True
+		
+		j=0
+		#bc_delay[counter] = int((bc_distance*np.sin(angle[i]*(np.pi/180)))/(speed_of_light*sample_period))
+		ab_top_delay[counter] = (-1.0)*int((ab_top_distance*np.cos(np.arctan(ab_top_vert_distance/ab_top_horz_distance)-(angle[i]*(np.pi/180.0))))/(speed_of_light*sample_period))
+		ac_top_delay[counter] = (-1.0)*int((ac_top_distance*np.cos(np.arctan(ac_top_vert_distance/ac_top_horz_distance)-(angle[i]*(np.pi/180.0))))/(speed_of_light*sample_period))
+		#print "\nFor angle: "+str(-1*angle[i])+ " degrees,  the  A_top_B_delay  should  be "+str(ab_top_delay[counter])
+		#print "For angle: "+str(-1*angle[i])+ " degrees, the A_top_C_delay should be "+str(ac_top_delay[counter])
+		
+		# Check for duplicates
+		for j in range(0,counter):
+			#print 'checking for duplicate'
+			if ((ab_top_delay[j] == ab_top_delay[counter]) and ((ac_top_delay[j] == ac_top_delay[counter]))):
+				#print "BC and TOP not unique"
+				unique_delay = False
+		# If the delay is unique, save it
+		#print "Save Delays"
+		if (unique_delay):
+			#print 'writing top delay'
+			top_outfile.write('0,\t'+str(ab_top_delay[counter])+',\t'+str(ac_top_delay[counter])+'\n')
+			counter +=1 
+		#print counter
+	
+	counter=0
+	for i in range(0,len(angle)):
+		unique_delay = True
+		j=0
+		#bc_delay[counter] = int((bc_distance*np.sin(angle[i]*(np.pi/180)))/(speed_of_light*sample_period))
+		ab_bot_delay[counter] = (-1.0)*int((ab_bot_distance*np.cos(np.arctan(ab_bot_vert_distance/ab_bot_horz_distance)-(angle[i]*(np.pi/180.0))))/(speed_of_light*sample_period))
+		ac_bot_delay[counter] = (-1.0)*int((ac_bot_distance*np.cos(np.arctan(ac_bot_vert_distance/ac_bot_horz_distance)-(angle[i]*(np.pi/180.0))))/(speed_of_light*sample_period))
+		#print "\nFor angle: "+str(-1*angle[i])+ " degrees,  the  A_bot_B_delay  should  be "+str(ab_bot_delay[counter])
+		#print "For angle: "+str(-1*angle[i])+ " degrees, the A_bot_C_delay should be "+str(ac_bot_delay[counter])
+		
+		# Check for duplicates
+		for j in range(0,counter):
+			#print 'checking for duplicate'
+			if((ab_bot_delay[j] == ab_bot_delay[counter]) and ((ac_bot_delay[j] == ac_bot_delay[counter]))):
+				#print "BC and Bot not unique"
+				unique_delay = False
+		# If the delay is unique, save it
+		#print "Save Delays"
+		if (unique_delay):
+			#print 'writing bot delay'
+			bot_outfile.write('0,\t'+str(ab_bot_delay[counter])+',\t'+str(ac_bot_delay[counter])+'\n')
+			counter +=1 
+		#print counter
+		
+		
+	top_outfile.close()
+	bot_outfile.close()
+	return 0
 	
 if __name__ == '__main__':
 	calculate_angles()

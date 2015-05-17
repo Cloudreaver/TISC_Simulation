@@ -19,11 +19,11 @@ def TISC_sim(SNR,threshold,
              sample_freq=2600000000.0,TISC_sample_length=16,
              num_samples=74,upsample=10,cw_flag=0,
              peak_amplitude=25.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
-             seed=5522684,draw_flag=0,digitization_factor=1,
+             seed=5522684,draw_flag=0,digitization_factor=20.0,
              delay_type_flag=1,
-             output_dir="output/"):                         
+             output_dir="output/",average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=1):                         
 
-   
+   #print correlation_mean
    # Setup
    save_output_flag = 0
    if(save_output_flag):
@@ -42,6 +42,7 @@ def TISC_sim(SNR,threshold,
    a_dig_waveform = np.zeros(num_samples)
    b_dig_waveform = np.zeros(num_samples)
    c_dig_waveform = np.zeros(num_samples)
+   cw_noise = np.zeros(num_samples)
    empty_list = np.zeros(num_samples)
 
 ###################################
@@ -52,20 +53,20 @@ def TISC_sim(SNR,threshold,
 ###################################
 
 #####################################
-   # Determine RMS of noise and signal amplitude
-   noise_rms = np.sqrt(np.mean((a_input_noise-noise_mean)**2,))   
-   signal_amp = SNR*2*noise_rms
+   # Determine signal amplitude    
+   signal_amp = SNR*2*noise_sigma
 #####################################
 
 #################################
    #Generate CW & thermal noise
    
    if cw_flag:
-      a_input_noise = np.add(a_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
-
-      b_input_noise = b_input_noise#np.add(b_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
-
-      c_input_noise = c_input_noise#np.add(c_input_noise,generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag))
+      cw_noise = generate_cw(num_samples,upsample,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+      a_input_noise = np.add(a_input_noise,cw_noise)
+      #cw_noise = generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+      b_input_noise = np.add(b_input_noise,cw_noise)
+      #cw_noise = generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+      c_input_noise = np.add(c_input_noise,cw_noise)
 
 #####################################
 
@@ -99,16 +100,23 @@ def TISC_sim(SNR,threshold,
 
 ##########################################
    # Digitized the incoming signal and noise (RITC)
-   a_dig_waveform = digitize(a_input_signal,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor)
-   b_dig_waveform = digitize(b_input_signal,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor)
-   c_dig_waveform = digitize(c_input_signal,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor)
+   a_dig_waveform = digitize(a_input_signal,num_samples,num_bits,digitization_factor)
+   b_dig_waveform = digitize(b_input_signal,num_samples,num_bits,digitization_factor)
+   c_dig_waveform = digitize(c_input_signal,num_samples,num_bits,digitization_factor)
 
 ##########################################
 
 
 ##########################################
    # Run the signal through the GLITC module to get trigger
-   trigger_flag, max_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag)
+   if (average_subtract_flag):
+      trigger_flag, max_sum, as_max_sum, correlation_mean = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,
+                                                threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=correlation_mean,trial_run_number=trial_run_number)
+   else:
+      trigger_flag, max_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,
+                                 threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
+                                 average_subtract_flag=average_subtract_flag,correlation_mean=correlation_mean)
 #########################################
 
 
@@ -121,10 +129,13 @@ def TISC_sim(SNR,threshold,
       f.Close()
 
    if draw_flag:
-      
       dummy = raw_input('Press any key to close')
+      
    #print "Everything took: " +str(datetime.now()-start_time)
-   return trigger_flag, max_sum
+   if (average_subtract_flag):
+      return trigger_flag, max_sum, as_max_sum, correlation_mean
+   else:
+      return trigger_flag, max_sum
 
 if __name__ == '__main__':
    #import ROOT
@@ -146,7 +157,15 @@ if __name__ == '__main__':
    cw_frequency = 260000000.0
    modulation_frequency = 1.0
    delay_type_flag = 1
-   digitization_factor=1.0
+   digitization_factor=20.0
+   average_subtract_flag = 1
+   #global correlation_mean
+   correlation_mean = np.zeros(44)
+   correlation_mean.fill(100)
+   
+   #print correlation_mean
+   
+    
    
    #print "SNR: "+str(SNR)
    #print "Threshold: "+str(threshold)
@@ -155,8 +174,10 @@ if __name__ == '__main__':
    # Get impulse signal
    #a_input_signal = np.zeros(num_samples*upsample)
    #a_input_signal = impulse_gen(num_samples,impulse_position,upsample=upsample,draw_flag=draw_flag)
-   passedFlag, max_sum = TISC_sim(SNR,threshold,impulse_position,b_input_delay,c_input_delay,num_bits=num_bits,
+   for i in range(0,10):
+      passedFlag, max_sum, as_max_sum, correlation_mean = TISC_sim(SNR,threshold,impulse_position,b_input_delay,c_input_delay,num_bits=num_bits,
                          upsample=upsample,num_samples=num_samples,noise_sigma=noise_sigma,
                          cw_flag=cw_flag,peak_amplitude=cw_amplitude,carrier_frequency=cw_frequency,modulation_frequency=modulation_frequency,
-                         draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir="output/",delay_type_flag=delay_type_flag)
+                         draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir="output/",delay_type_flag=delay_type_flag,
+                         average_subtract_flag=average_subtract_flag,correlation_mean=correlation_mean,trial_run_number=i+1)
    print passedFlag

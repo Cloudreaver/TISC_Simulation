@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 if __name__ == '__main__':
-   from ROOT import TGraph, TMultiGraph,TCanvas,TImage,gROOT,gStyle,gSystem,gPad,TFile,TLegend, TH1F, TTree
+   #from ROOT import TGraph, TMultiGraph,TCanvas,TImage,gROOT,gStyle,gSystem,gPad,TFile,TLegend, TH1F, TTree
    import time
    import os
    from TISC_sim import TISC_sim

@@ -5,23 +5,19 @@
 import random
 import numpy as np
 
-def digitize(input_array,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor=1):
+def digitize(input_array,num_samples,num_bits,digitization_factor=1):
    
-   noise_rms *= digitization_factor
+   #noise_rms *= digitization_factor
          
    # Fill numpy arrays with zeros
    dig_waveform = np.zeros(num_samples)
-   upsample = 1
+   
    # Convert to 3 bit values
    for index in range(0,num_samples):
       for bit_index in range(0,2**(num_bits-1)):
-         if (upsample > 1):
-            downsample_random = random.randrange(0,upsample-1)
-         else:
-            downsample_random = 0
-         if input_array[(index*upsample)+downsample_random] > (bit_index)*(noise_rms)+noise_mean: 
+         if input_array[index] > (bit_index)*(digitization_factor): 
             dig_waveform[index] = bit_index+0.5
-         elif input_array[(index*upsample)+downsample_random] < ((-bit_index)*(noise_rms)+noise_mean): 
+         elif input_array[index] < ((-bit_index)*(digitization_factor)): 
             dig_waveform[index] = -bit_index-0.5
       
          
@@ -32,30 +28,25 @@ if __name__ == '__main__':
    from noise import generate_noise
    import matplotlib.pyplot as plt
 
-   num_samples = 256
-   upsample = 1
+   num_samples = 128
    num_bits = 3
-   noise_mean = 450
-   noise_sigma = 100
-   digitization_factor = 1
+   noise_sigma = 20.0
+   digitization_factor = 20.0
    sample_frequency = 2600000000.0
 
-   num_upsamples = num_samples*upsample
-   sample_noise = np.zeros(num_upsamples)
+   sample_noise = np.zeros(num_samples)
    dig_waveform = np.zeros(num_samples)
-   sine_waveform = np.zeros(num_upsamples)
+   sine_waveform = np.zeros(num_samples)
 
-   sample_noise = generate_noise(num_upsamples,upsample,noise_mean,noise_sigma,1)
-   noise_rms = np.sqrt(np.mean((sample_noise-noise_mean)**2))
-   #sample_noise[4] = noise_mean +(noise_rms*10)
+   sample_noise = generate_noise(num_samples,noise_mean=0.0,noise_sigma=noise_sigma,filter_flag=1)
    
-   for i in range(0,int(num_upsamples)):
+   for i in range(0,int(num_samples)):
       sine_waveform[i] = 3.0*noise_sigma*np.sin(2*np.pi*50000000.0*(float(i)/sample_frequency))
          
    sample = sine_waveform + sample_noise
-   dig_waveform = digitize(sample,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor)
+   dig_waveform = digitize(sample,num_samples,num_bits,digitization_factor)
    
-   t = np.linspace(0,(1/2800000000.0)*num_samples*(10**9),upsample*num_samples)
+   t = np.linspace(0,(1/2800000000.0)*num_samples*(10**9),num_samples)
 
    plt.figure()
    plt.clf()
