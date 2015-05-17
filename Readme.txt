@@ -5,7 +5,7 @@ SYNOPSYS
 This compilaiton of code simulations the Triggering Interferometric Sum Correlator (TISC) board, planned for use in the fourth flight of the Antarctic Impulsive Transient Antenna (ANITA). 
 
 PREREQUISITES
-Python,Numpy, Scipy, Matplotlib
+Python,Numpy, Scipy, Matplotlib, ROOT(for now)
 
 RUNNING THE SIMULATION
 There are currently ways of running a full simulation of the code. 
