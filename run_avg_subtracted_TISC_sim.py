@@ -13,12 +13,12 @@ if __name__ == '__main__':
 	import matplotlib.pyplot as plt
 
 	##################### Parameters ###################################
-	num_events = 100  			# Number of events to generate per threshold
+	num_events = 1000  					# Number of events to generate per threshold
 	simulation_rate = 200.0   			# Simulation speed
 	event_rate= 100.0			 		# Rate to generate impulseive events
 	num_trials = 100					# Number of trials to average over
 	
-	num_samples = 74                 	# Length of Signal Window
+	num_samples = 80                 	# Length of Signal Window (TISC needs at least 68 samples to calculate all delays
 	upsample = 10						# Oversample factor for impulse generation
 	impulse_pos = 5                  	# Position of impulse in Ch A (must be contained within first 32 samples)
 	b_input_delay = 0                	# Ch B signal offset
@@ -26,15 +26,14 @@ if __name__ == '__main__':
 	
 	SNR = 3.0							# SNR of impulsive signal	
 	noise_sigma = 20.0					# Gaussian Sigma in mV
-	noise_mean = 0.0					# Gaussian Mean in mV
 	
-	digitization_factor = 20.0       # Digitization Factor
+	digitization_factor = 20.0       	# Digitization Factor
 	
 	draw_flag = False                	# 1=draw event graphs, 0=don't                        
 	SNR_draw_flag = True             	# 1=draw SNR graphs, 0=don't
 	delay_type_flag = True              # True=use GLITC delays, False=all possible delays
 	cw_flag = True						# Turns on/off CW
-	save_output = False					# To save or not to save
+	save_output = True					# To save or not to save
 	
 	carrier_frequency= 500000000.0    	# Hz
 	modulation_frequency= 1.0  			# Hz
@@ -56,9 +55,9 @@ if __name__ == '__main__':
 	average_subtracted_trigger_number = np.zeros(len(threshold))
 	trigger_rate = np.zeros(len(threshold))
 	trigger_number = np.zeros(len(threshold))
-	thermal_correlation_mean = np.zeros(44)
+	thermal_correlation_mean = np.zeros(50)
 	#thermal_correlation_mean.fill(correlation_mean_primer)
-	cw_thermal_correlation_mean = np.zeros(44)
+	cw_thermal_correlation_mean = np.zeros(50)
 	#cw_thermal_correlation_mean.fill(correlation_mean_primer)
 	
 	if(cw_flag):
@@ -118,7 +117,6 @@ if __name__ == '__main__':
 	   
 		settings_filename.write("\nCh B Input Delay: " + str(b_input_delay))
 		settings_filename.write("\nCh C Input Delay: " + str(c_input_delay))
-		settings_filename.write("\nNoise Mean: " +str(noise_mean))
 		settings_filename.write("\nNoise Sigma: "+str(noise_sigma))
 		settings_filename.write("\nMinimum Threshold: " + str(low_threshold))
 		settings_filename.write("\nMaximum Threshold: " + str(high_threshold))
@@ -141,7 +139,7 @@ if __name__ == '__main__':
 		thermal_passed_flag, thermal_max_sum, average_subtracted_thermal_max_sum, thermal_correlation_mean = TISC_sim(0.0,100,
 				impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 				cw_flag=0,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-				noise_sigma=noise_sigma,noise_mean=noise_mean,average_subtract_flag=1,correlation_mean=thermal_correlation_mean,
+				noise_sigma=noise_sigma,average_subtract_flag=1,correlation_mean=thermal_correlation_mean,
 				trial_run_number=timestep,digitization_factor=digitization_factor)
 
 		if(cw_flag):		
@@ -149,7 +147,7 @@ if __name__ == '__main__':
 			cw_thermal_passed_flag, cw_thermal_max_sum, average_subtracted_cw_thermal_max_sum, cw_thermal_correlation_mean = TISC_sim(0.0,100,
 					impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 					cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-					noise_sigma=noise_sigma,noise_mean=noise_mean,average_subtract_flag=1,
+					noise_sigma=noise_sigma,average_subtract_flag=1,
 					correlation_mean=cw_thermal_correlation_mean,trial_run_number=timestep,digitization_factor=digitization_factor)
 					
 		plot_correlation[timestep-1] = cw_thermal_correlation_mean[10]
@@ -189,7 +187,7 @@ if __name__ == '__main__':
 		thermal_passed_flag, thermal_max_sum, average_subtracted_thermal_max_sum, thermal_correlation_mean = TISC_sim(0.0,100,
 				impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 				cw_flag=0,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-				noise_sigma=noise_sigma,noise_mean=noise_mean,average_subtract_flag=1,correlation_mean=thermal_correlation_mean,
+				noise_sigma=noise_sigma,average_subtract_flag=1,correlation_mean=thermal_correlation_mean,
 				trial_run_number=0, digitization_factor=digitization_factor)
 		
 		# A bit of cheating here, if an impulsive or cw event is called for, these values will be overwritten
@@ -203,7 +201,7 @@ if __name__ == '__main__':
 			cw_thermal_passed_flag, cw_thermal_max_sum, average_subtracted_cw_thermal_max_sum, cw_thermal_correlation_mean = TISC_sim(0.0,100,
 					impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 					cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-					noise_sigma=noise_sigma,noise_mean=noise_mean,average_subtract_flag=1,
+					noise_sigma=noise_sigma,average_subtract_flag=1,
 					correlation_mean=cw_thermal_correlation_mean,trial_run_number=0,digitization_factor=digitization_factor)
 					
 			# A bit of cheating here, if an impulsive or cw event is called for, these values will be overwritten
@@ -217,7 +215,7 @@ if __name__ == '__main__':
 			event_passed_flag, signal_max_sum, average_subtracted_signal_max_sum, correlation_mean = TISC_sim(SNR,100,
 						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,noise_mean=noise_mean,average_subtract_flag=1,
+						noise_sigma=noise_sigma,average_subtract_flag=1,
 						correlation_mean=cw_thermal_correlation_mean,trial_run_number=0,digitization_factor=digitization_factor)
 		################################################################
 		#print average_subtracted_signal_max_sum+max_sum_offset
@@ -316,16 +314,14 @@ if __name__ == '__main__':
 		ax= plt.gca()
 		ax.set_autoscale_on(False)
 		plt.grid(True)
-		
-		
 		plt.semilogy(threshold,average_subtracted_trigger_diff,'r',threshold,trigger_diff,'b')
-		plt.title("Trigger Rate Improvement @ SNR: "+str(SNR)+"with CW: "+str(peak_amplitude/noise_sigma)+" "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
+		plt.title("Trigger Rate Improvement @ SNR: "+str(SNR)+" with CW: "+str(peak_amplitude/noise_sigma)+" "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
 		plt.xlabel("Threshold [DAC Counts]")
 		plt.ylabel("Trigger Rate Difference [Hz]")
 		plt.ylim(0.0,simulation_rate*2)	
 		#ax.legend(("Avg. Sub. Rate Diff @ SNR: "+str(SNR)),("Non Sub. Rate Diff @ SNR: "+str(SNR)))
 		if(save_output):
-			plt.savefig(output_dir+"/cw_vs_thermal_rates"+str(peak_amplitude/noise_sigma)+".png")
+			plt.savefig(output_dir+"/cw_vs_thermal_rates_"+str(peak_amplitude/noise_sigma)+".png")
 	plt.show()
 	
 	# Close open files

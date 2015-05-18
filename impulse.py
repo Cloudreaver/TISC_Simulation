@@ -29,6 +29,20 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
     b, a = butter_bandpass(low_corner_freq, high_corner_freq, order=order,fs=2600000000.0)
     w, h = freqz(b, a, worN=num_samples)
     
+    # Transform bandpass filter into time domain to get impulse signal
+    upsample_signal_temp = ifft(h,num_upsamples).real
+        
+    # Delay impulse (But keep start after 37 to allow all delays to run)
+    random_delay = int(np.random.uniform()*16)+37
+
+    upsample_signal[random_delay*upsample:num_upsamples] = upsample_signal_temp[0:num_upsamples-random_delay*upsample]
+    
+    sample_period = upsample_time[1]-upsample_time[0]
+    phase = int(np.random.uniform()*upsample)
+    
+    for t in range(0,num_samples):
+        signal[t] = upsample_signal[t*upsample+phase]
+
     # Plot the frequency response of the antenna
     if(draw_flag):
         plt.figure(1)
@@ -39,30 +53,13 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
         plt.ylabel('Gain')
         plt.title('Simulated Impulse Reponse')
         plt.grid(True)
-        
-    # Transform bandpass filter into time domain to get impulse signal
-    upsample_signal_temp = ifft(h,num_upsamples).real
-        
-    # Delay impulse 
-    random_delay = int(np.random.uniform()*16)
 
-    upsample_signal[random_delay*upsample:num_upsamples] = upsample_signal_temp[0:num_upsamples-random_delay*upsample]
-    
     if (draw_flag==1):
         plt.figure(2)
         plt.plot(upsample_time,1000.0*upsample_signal[0:num_upsamples])
         plt.xlabel("Time [ns]")
         plt.ylabel("Voltage [mV]")
         plt.title("Upsampled Impulse Simulation")
-        #plt.show()
-
-    
-    sample_period = upsample_time[1]-upsample_time[0]
-    phase = int(np.random.uniform()*upsample)
-    
-    for t in range(0,num_samples):
-        signal[t] = upsample_signal[t*upsample+phase]
-
     
     if (draw_flag==1):
         plt.figure(3)
@@ -71,8 +68,8 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
         plt.ylabel("Voltage [mV]")
         plt.title("Impulse Simulation")
         plt.show()
-    #print len(signal)
-    return signal#, upsample_signal
+
+    return signal
 
 
 if __name__ == '__main__':
@@ -83,8 +80,9 @@ if __name__ == '__main__':
     sample_length = 74
     impulse_position = 10
     upsample = 10
-    draw_flag = 1
+    draw_flag = 0
     
+    upsample_length = upsample*sample_length
     
     impulse_sample = np.zeros(sample_length)
     impulse_upsample_fit = np.zeros(upsample_length)
@@ -98,6 +96,4 @@ if __name__ == '__main__':
     plt.xlabel("Time [ns]")
     plt.ylabel("Amplitude [unitless]")
     plt.title("Impulse Simulation")
-    if (save_plot_flag):
-        plt.savefig("plots/impulse_sample.png")
     plt.show()

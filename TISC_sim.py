@@ -15,7 +15,7 @@ from datetime import datetime
 
 def TISC_sim(SNR,threshold,
              impulse_position,b_input_delay,c_input_delay,num_bits=3,
-             noise_sigma=20.0,noise_mean=0.0,
+             noise_sigma=20.0,
              sample_freq=2600000000.0,TISC_sample_length=16,
              num_samples=74,upsample=10,cw_flag=0,
              peak_amplitude=25.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
@@ -47,9 +47,9 @@ def TISC_sim(SNR,threshold,
 
 ###################################
    # Generate Thermal Noise
-   a_input_noise = generate_noise(num_samples,noise_mean,noise_sigma,filter_flag)
-   b_input_noise = generate_noise(num_samples,noise_mean,noise_sigma,filter_flag)
-   c_input_noise = generate_noise(num_samples,noise_mean,noise_sigma,filter_flag)
+   a_input_noise = generate_noise(num_samples,noise_sigma,filter_flag)
+   b_input_noise = generate_noise(num_samples,noise_sigma,filter_flag)
+   c_input_noise = generate_noise(num_samples,noise_sigma,filter_flag)
 ###################################
 
 #####################################
@@ -160,7 +160,7 @@ if __name__ == '__main__':
    digitization_factor=20.0
    average_subtract_flag = 1
    #global correlation_mean
-   correlation_mean = np.zeros(44)
+   correlation_mean = np.zeros(50)
    correlation_mean.fill(100)
    
    #print correlation_mean

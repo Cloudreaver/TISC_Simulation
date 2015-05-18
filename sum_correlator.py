@@ -8,7 +8,6 @@ import numpy as np
 
 
 def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length=16,delay_type_flag=0,average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=1):
-   import matplotlib.pyplot as plt
    #speed_of_light = 2.99*10**8
    #sample_period = 3.5810**(-10)
    #ab_distance = 1.0
@@ -19,12 +18,12 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    trigger_flag = 0
    if (delay_type_flag == 1):
       GLITC_delays = np.array([[0,0,0],
-                           #[0,-1,2],
-                           #[0,-1,3],
-                           #[0,-1,4],
-                           #[0,-1,5],
-                           #[0,-1,6],
-                           #[0,-1,7],
+                           [0,-1,2],
+                           [0,-1,3],
+                           [0,-1,4],
+                           [0,-1,5],
+                           [0,-1,6],
+                           [0,-1,7],
                            [0,0,4],
                            [0,0,5],
                            [0,0,6],
@@ -113,13 +112,18 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
             b_start_pos = chunk*TISC_sample_length+GLITC_delays[i][1]
             c_start_pos = chunk*TISC_sample_length+GLITC_delays[i][2]
             
+            # Make sure we don't run off the front end of the array
+            # These delays will be picked up in the next chunk
+            if ((a_start_pos < 0) or (b_start_pos < 0 ) or (c_start_pos < 0)):
+               continue
+            
             # Add each sample at given delay
             add_AB = np.add(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
             add_ABC = np.add(add_AB,c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
             square_ABC = add_ABC**2
             square_sum_ABC[i] = np.sum(square_ABC)
 
-      # Add all the two sums for each delay
+      # Add all the 16 sample sums for each delay
       total_sum = np.add(square_sum_ABC,previous_square_sum) 
       
       # Find the maximum sum
@@ -129,8 +133,11 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       best_delays = GLITC_delays[np.argmax(total_sum)]
       
       if(average_subtract_flag):
+         # Average over sums during the trial period
          if (trial_run_number>0):
             correlation_mean = (1.0/trial_run_number)*(((trial_run_number-1)*correlation_mean)+total_sum)
+            
+         # After the trial period (trial_run_number=0) actually subtracted the average
          as_total_sum = np.subtract(total_sum,correlation_mean)
          as_max_total_sum = np.amax(as_total_sum)
          as_best_delays = GLITC_delays[np.argmax(as_total_sum)]
@@ -216,13 +223,13 @@ if __name__ == '__main__':
    delay_type_flag = 1
    average_subtract_flag = 1
    #global correlation_mean
-   correlation_mean = np.zeros(44)
+   correlation_mean = np.zeros(50)
    correlation_mean.fill(50)
    filter_flag = 0
    
    signal_amp = SNR*2*noise_rms
 
-   for i in range(0,10):
+   for i in range(0,1):
       a_waveform = impulse_gen(num_samples,a_delay,upsample,draw_flag=0,output_dir='output/')
       a_waveform = np.add(a_waveform,generate_noise(num_samples,noise_mean,noise_mean,filter_flag))
       
@@ -230,7 +237,7 @@ if __name__ == '__main__':
       a_waveform *= (1/difference) # Normalize input
       a_waveform *= signal_amp # Amplify
       
-      a_dig_waveform = digitize(a_waveform,num_samples,upsample,num_bits,noise_mean,noise_rms,digitization_factor=0.5)
+      a_dig_waveform = digitize(a_waveform,num_samples,num_bits,digitization_factor=20.0)
    
    
 
@@ -240,5 +247,5 @@ if __name__ == '__main__':
       print i
       passed_flag, max_sum, as_max_sum, correlation_mean = sum_correlate(num_samples,a_dig_waveform,np.roll(a_dig_waveform,b_delay),np.roll(a_dig_waveform,c_delay),
                                                 threshold,TISC_sample_length=TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,run_number=i+1)
+                                                average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,trial_run_number=0)
    print passed_flag

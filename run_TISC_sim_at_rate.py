@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 if __name__ == '__main__':
-   #from ROOT import TGraph, TMultiGraph,TCanvas,TImage,gROOT,gStyle,gSystem,gPad,TFile,TLegend, TH1F, TTree
+   from ROOT import TGraph, TMultiGraph,TCanvas,TImage,gROOT,gStyle,gSystem,gPad,TFile,TLegend, TH1F, TTree
    import time
    import os
    from TISC_sim import TISC_sim
@@ -18,9 +18,8 @@ if __name__ == '__main__':
    simulation_rate = 100.0          # Simulation Rate
    event_rate=100.0                 # Rate to generate events
    num_runs = int(num_events*(simulation_rate/event_rate)) 
-   num_samples = 74                 # Length of Signal Window
-   noise_sigma = 20.0
-   noise_mean = 0.0
+   num_samples = 80                 # Length of Signal Window
+   noise_sigma = 20.0               # Noise Sigma in mV
    draw_flag = False                # 1=draw event graphs, 0=don't                        
    SNR_draw_flag = True             # 1=draw SNR graphs, 0=don't
    delay_type_flag = 1              # 1=use GLITC delays, 0=all possible delays
@@ -87,7 +86,6 @@ if __name__ == '__main__':
    
    settings_filename.write("\nCh B Input Delay: " + str(b_input_delay))
    settings_filename.write("\nCh C Input Delay: " + str(c_input_delay))
-   settings_filename.write("\nNoise Mean: " +str(noise_mean))
    settings_filename.write("\nNoise Sigma: "+str(noise_sigma))
    settings_filename.write("\nMinimum SNR: " + str(low_SNR))
    settings_filename.write("\nMaximum SNR: " + str(high_SNR))
