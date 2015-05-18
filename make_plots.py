@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	cw_flag = True
 	carrier_frequency=260000000.0    # Hz
 	modulation_frequency= 1.0  # Hz
-	peak_amplitude = 1.0*noise_sigma #Peak amplitude in mV
+	cw_rms = 1.0*noise_sigma #Peak amplitude in mV
 
 	upsample_length = upsample*sample_length
 
@@ -78,7 +78,7 @@ if __name__ == '__main__':
 		plt.savefig("plots/noise_sample.png")
 
 	if (cw_flag):
-		cw_sample = generate_cw(sample_length=sample_length,upsample=upsample,sample_frequency=sample_frequency,carrier_frequency=carrier_frequency,modulation_frequency=modulation_frequency,peak_amplitude=peak_amplitude,filter_flag=1)
+		cw_sample = generate_cw(sample_length=sample_length,upsample=upsample,sample_frequency=sample_frequency,carrier_frequency=carrier_frequency,modulation_frequency=modulation_frequency,cw_rms=cw_rms,filter_flag=1)
 		b_cw_sample = cw_sample#generate_cw(sample_length=sample_length,sample_frequency=sample_frequency,carrier_frequency=carrier_frequency,modulation_frequency=modulation_frequency,peak_amplitude=peak_amplitude,filter_flag=1)
 		c_cw_sample = cw_sample#generate_cw(sample_length=sample_length,sample_frequency=sample_frequency,carrier_frequency=carrier_frequency,modulation_frequency=modulation_frequency,peak_amplitude=peak_amplitude,filter_flag=1)
 		plt.figure(4)

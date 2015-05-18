@@ -105,12 +105,14 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
          # Get sum correlation for 16 samples
          for i in range(0,len(GLITC_delays)):
             # Determine the starting position for each sample
+            # Magic number (37) here is the minimum position of the impulse position
             a_start_pos = chunk*TISC_sample_length+GLITC_delays[i][0]+37
             b_start_pos = chunk*TISC_sample_length+GLITC_delays[i][1]+37
             c_start_pos = chunk*TISC_sample_length+GLITC_delays[i][2]+37
             
             # Make sure we don't run off the front end of the array
             # These delays will be picked up in the next chunk
+            # Probably don't need thing anymore
             if ((a_start_pos < 0) or (b_start_pos < 0 ) or (c_start_pos < 0)):
                continue
             
@@ -147,9 +149,10 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       #print len(GLITC_delays)
       #print "Max Sum: "+str(max_total_sum)
       #print best_delays
-
+      
+   # All possible delays (may not work anymore)
    else:
-
+   
       #Set the lower index limit of Ch B/C
       for chunk in range(0,(num_samples/TISC_sample_length)):
          b_lower_index_limit = 0

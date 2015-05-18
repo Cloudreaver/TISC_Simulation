@@ -26,8 +26,7 @@ if __name__ == '__main__':
    cw_flag = True
    carrier_frequency = 260000000.0    # Hz
    modulation_frequency = 1.0  # Hz
-   cw_factor = 2.0
-   peak_amplitude = cw_factor*noise_sigma #Peak amplitude in mV
+   cw_rms = 2.0*noise_sigma #Peak amplitude in mV
    
 
    # These delays should be negative, since A is the top antenna
@@ -62,7 +61,7 @@ if __name__ == '__main__':
 
    # Write settings file
    if(cw_flag):
-      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_CW"+str(cw_factor)+"_Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_CW"+str(cw_rms)+"_Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    else:
       output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_"+"Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    if not os.path.exists(output_dir):
@@ -156,14 +155,14 @@ if __name__ == '__main__':
             #print "Generating impulsive event"
             event_passed_flag, max_sum = TISC_sim(SNR[SNR_counter],100,
                                          impulse_pos,b_input_delay,c_input_delay,num_bits=num_bits,delay_type_flag=delay_type_flag,upsample=upsample,num_samples=num_samples,
-                                         cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+                                         cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
                                          noise_sigma=noise_sigma,noise_mean=noise_mean,
                                          draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir=output_dir)
          else:
             #print "Generating Noise Event"
             event_passed_flag, max_sum = TISC_sim(0.0,100,
                                          impulse_pos,b_input_delay,c_input_delay,num_bits=num_bits,delay_type_flag=delay_type_flag,upsample=upsample,num_samples=num_samples,
-                                         cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+                                         cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
                                          noise_sigma=noise_sigma,noise_mean=noise_mean,
                                          draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir=output_dir)
       
@@ -204,7 +203,7 @@ if __name__ == '__main__':
 
    # Set up Multigraph and add graphs
    if (cw_flag):
-      multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate w/ CW @ "+str(cw_factor))
+      multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate w/ CW_RMS @ "+str(cw_rms)+"mV")
    else:
       multigraph.SetTitle("TISC Sim "+str(event_rate)+" MHz Event Rate "+str(simulation_rate)+" Simulation Rate")
    if(SNR_draw_flag):

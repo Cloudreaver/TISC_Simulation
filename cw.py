@@ -11,10 +11,13 @@ from scipy.signal import resample
 from random import random
 
 
-def generate_cw(sample_length,upsample=10,sample_frequency=2600000000.0, carrier_frequency=500000000.0,modulation_frequency=1.0, peak_amplitude=20.0,filter_flag=True):
+def generate_cw(sample_length,upsample=10,sample_frequency=2600000000.0, carrier_frequency=500000000.0,modulation_frequency=1.0, cw_rms=20.0,filter_flag=True):
 
     upsample_length = sample_length*upsample
     upsample_frequency = sample_frequency*upsample
+    
+    # Convert peak-to-peak to rms value (0.707 is the RMS of a sine wave with A=1)
+    peak_amplitude = cw_rms/0.707
 
     # Make large sample length to avoid edge effects
     expanded_sample_length = sample_length * 2
@@ -23,15 +26,12 @@ def generate_cw(sample_length,upsample=10,sample_frequency=2600000000.0, carrier
     # Define the cw array
     upsampled_cw = np.zeros(expanded_upsample_length)
     cw = np.zeros(expanded_sample_length)
-    M=0.0 # Envelope Amplitude
+    M=1.0 # Envelope Amplitude
 
-    # Fill array with sine wave of given freq and amp
+    # Fill array with AM wave of given freq and amp
     for i in range(0,int(expanded_upsample_length)):
         upsampled_cw[i] = peak_amplitude*np.sin(2*np.pi*(carrier_frequency/upsample_frequency)*float(i))*(2/np.pi)*(1+M*np.cos(2*np.pi*(modulation_frequency/upsample_frequency)*float(i)))
 
-    
-    
-    
     # Apply random phase shift to signal
     phase_shift = int((upsample_frequency/modulation_frequency)*random())
     cw = np.roll(cw,phase_shift)
@@ -43,7 +43,7 @@ def generate_cw(sample_length,upsample=10,sample_frequency=2600000000.0, carrier
     if filter_flag:
         cw = butter_bandpass_filter(cw)
 
-    # Define start and end of signal window
+    # Define start and end of signal window (avoids weird edge effects)
     window_start = expanded_sample_length/3
     window_end = window_start+sample_length
 
@@ -56,13 +56,13 @@ if __name__ == '__main__':
     sample_frequency =    2600000000.0
     carrier_frequency =    500000000.0 # Dominant freq. seen in ANITA3
     modulation_frequency =  1000.0 
-    peak_amplitude = 20.0
+    cw_rms = 20.0
     filter_flag = False
 
     cw = np.zeros(sample_length)
     t = np.zeros(sample_length)
 
-    cw = generate_cw(sample_length,upsample,sample_frequency,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+    cw = generate_cw(sample_length,upsample,sample_frequency,carrier_frequency,modulation_frequency,cw_rms,filter_flag)
 
     plt.figure(1)
     plt.clf()

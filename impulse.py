@@ -1,26 +1,25 @@
 #!/usr/bin/env python
 
 def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_corner_freq=250000000.0,high_corner_freq=900000000.0,order=2,draw_flag=0,output_dir='output/'):
-    # Input defaults are set for TISC bandpass filters
+    # Input defaults are set for TISC impulse response
 
     import numpy as np
     if(draw_flag):
         import matplotlib.pyplot as plt
     from scipy.signal import freqz
-    from scipy import ifft, shape
-    from scipy.interpolate import interp1d
-    from anita_filter import butter_bandpass, butter_bandpass_filter
+    from scipy import ifft
+    from anita_filter import butter_bandpass
 
     # Get number of samples in upscaled signal
     num_upsamples = num_samples*upsample
 
-    # Adjust the delay for upsampling
-    nyquist_freq = freq_response/2
-    
     signal = np.zeros(num_samples)
     signal_temp = np.zeros(num_samples)
     upsample_signal_temp = np.zeros(num_upsamples)
     upsample_signal = np.zeros(num_upsamples)
+    
+    # Find Nyquist Frequency
+    nyquist_freq = freq_response/2.0
     
     # Get time axis
     time = np.linspace(0.0,(num_samples/freq_response)*(10**9), num_samples)

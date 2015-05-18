@@ -39,7 +39,7 @@ if __name__ == '__main__':
 	
 	carrier_frequency= 500000000.0    	# Hz
 	modulation_frequency= 1.0  			# Hz
-	peak_amplitude = 1.5*20.0 			# Peak amplitude in mV
+	cw_rms = 1.5*20.0 			# Peak amplitude in mV
 
 	low_threshold = 0              		# Lowest Threshold
 	high_threshold = 400          		# Highest Threshold
@@ -94,7 +94,7 @@ if __name__ == '__main__':
 	########### Write settings file ####################################
 	if(save_output):
 		if (cw_flag):
-			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_CW"+str(peak_amplitude/noise_sigma)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_RUNS"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_CW"+str(cw_rms)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_RUNS"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
 		else:
 			output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/as_SNR"+str(SNR)+"_ER"+str(event_rate)+"_SR"+str(simulation_rate)+"_RUNS"+str(num_events)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
 		print output_dir
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 			settings_filename.write("\nAdding CW Noise")
 			settings_filename.write("\nCW Frequency: " +str(carrier_frequency))
 			settings_filename.write("\nModulation Frequency: " + str(modulation_frequency))
-			settings_filename.write("\nCW Amplitude: " + str(peak_amplitude))
+			settings_filename.write("\nCW RMS: " + str(cw_rms))
 		else:
 			settings_filename.write("\nNo CW added")
 	   
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 		# Thermal event					
 		thermal_passed_flag, thermal_max_sum, average_subtracted_thermal_max_sum, thermal_correlation_mean = TISC_sim(0.0,100,
 				impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-				cw_flag=0,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+				cw_flag=0,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
 				noise_sigma=noise_sigma,average_subtract_flag=1,correlation_mean=thermal_correlation_mean,
 				trial_run_number=timestep,digitization_factor=digitization_factor)
 
@@ -148,7 +148,7 @@ if __name__ == '__main__':
 			# CW + thermal noise event				
 			cw_thermal_passed_flag, cw_thermal_max_sum, average_subtracted_cw_thermal_max_sum, cw_thermal_correlation_mean = TISC_sim(0.0,100,
 					impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-					cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+					cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
 					noise_sigma=noise_sigma,average_subtract_flag=1,
 					correlation_mean=cw_thermal_correlation_mean,trial_run_number=timestep,digitization_factor=digitization_factor)
 					
@@ -166,7 +166,7 @@ if __name__ == '__main__':
 	#ax.set_autoscale_on(False)
 	#plt.grid(True)	
 	#plt.plot(plot_time,plot_correlation,'b')
-	#plt.title("Trigger Rate Improvement @ SNR: "+str(SNR)+"with CW: "+str(peak_amplitude/noise_sigma)+" "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
+	#plt.title("Trigger Rate Improvement @ SNR: "+str(SNR)+"with CW: "+str(cw_rms)+" "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
 	#plt.xlabel("Threshold [DAC Counts]")
 	#plt.ylabel("Trigger Rate Difference [Hz]")
 	#plt.ylim(0.0,simulation_rate*2)	
@@ -188,7 +188,7 @@ if __name__ == '__main__':
 		# Thermal event					
 		thermal_passed_flag, thermal_max_sum, average_subtracted_thermal_max_sum, thermal_correlation_mean = TISC_sim(0.0,100,
 				impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-				cw_flag=0,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+				cw_flag=0,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
 				noise_sigma=noise_sigma,average_subtract_flag=1,correlation_mean=thermal_correlation_mean,
 				trial_run_number=0, digitization_factor=digitization_factor)
 		
@@ -202,7 +202,7 @@ if __name__ == '__main__':
 			# CW + thermal noise event				
 			cw_thermal_passed_flag, cw_thermal_max_sum, average_subtracted_cw_thermal_max_sum, cw_thermal_correlation_mean = TISC_sim(0.0,100,
 					impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-					cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+					cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
 					noise_sigma=noise_sigma,average_subtract_flag=1,
 					correlation_mean=cw_thermal_correlation_mean,trial_run_number=0,digitization_factor=digitization_factor)
 					
@@ -216,7 +216,7 @@ if __name__ == '__main__':
 			# Non-subtracted impulseive event
 			event_passed_flag, signal_max_sum, average_subtracted_signal_max_sum, correlation_mean = TISC_sim(SNR,100,
 						impulse_pos,b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-						cw_flag=cw_flag,carrier_frequency=carrier_frequency,peak_amplitude=peak_amplitude,modulation_frequency=modulation_frequency,
+						cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_rms=cw_rms,modulation_frequency=modulation_frequency,
 						noise_sigma=noise_sigma,average_subtract_flag=1,
 						correlation_mean=cw_thermal_correlation_mean,trial_run_number=0,digitization_factor=digitization_factor)
 		################################################################
@@ -295,9 +295,9 @@ if __name__ == '__main__':
 	plt.ylabel("Trigger Rate [Hz]")
 	plt.ylim(0.0,simulation_rate*2)
 	if (cw_flag):
-		ax.legend((("50% Efficient"),("Avg. Subtract SNR "+str(SNR)+" CW "+str(peak_amplitude/noise_sigma)),("Non Subtracted SNR "+str(SNR)+" CW "+str(peak_amplitude/noise_sigma)),"Avg. Subtracted CW+Thermal","Non Subtracted CW+Thermal","Avg. Subtracted Thermal","Non Subtracted Thermal"))
+		ax.legend((("50% Efficient"),("Avg. Subtract SNR "+str(SNR)+" CW "+str(cw_rms)),("Non Subtracted SNR "+str(SNR)+" CW "+str(cw_rms)),"Avg. Subtracted CW+Thermal","Non Subtracted CW+Thermal","Avg. Subtracted Thermal","Non Subtracted Thermal"))
 		if(save_output):
-			plt.savefig(output_dir+"/avg_sub_cw_"+str(peak_amplitude/noise_sigma)+".png")	
+			plt.savefig(output_dir+"/avg_sub_cw_"+str(cw_rms)+".png")	
 	else:
 		ax.legend((("50% Efficient"),("Avg. Subtract SNR "+str(SNR)),("Non Subtracted SNR "+str(SNR)),"Avg. Subtracted Thermal","Non Subtracted Thermal"))
 		if(save_output):
@@ -317,13 +317,13 @@ if __name__ == '__main__':
 		ax.set_autoscale_on(False)
 		plt.grid(True)
 		plt.semilogy(threshold,average_subtracted_trigger_diff,'r',threshold,trigger_diff,'b')
-		plt.title("Trigger Rate Improvement @ SNR: "+str(SNR)+" with CW: "+str(peak_amplitude/noise_sigma)+" "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
+		plt.title("Trigger Rate Improvement @ SNR: "+str(SNR)+" with CW: "+str(cw_rms)+" "+str(event_rate)+" Hz Event Rate @ "+str(simulation_rate)+" Hz Simulation Rate")
 		plt.xlabel("Threshold [DAC Counts]")
 		plt.ylabel("Trigger Rate Difference [Hz]")
 		plt.ylim(0.0,simulation_rate*2)	
 		#ax.legend(("Avg. Sub. Rate Diff @ SNR: "+str(SNR)),("Non Sub. Rate Diff @ SNR: "+str(SNR)))
 		if(save_output):
-			plt.savefig(output_dir+"/cw_vs_thermal_rates_"+str(peak_amplitude/noise_sigma)+".png")
+			plt.savefig(output_dir+"/cw_vs_thermal_rates_"+str(cw_rms)+".png")
 	plt.show()
 	
 	# Close open files

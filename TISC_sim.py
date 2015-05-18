@@ -18,7 +18,7 @@ def TISC_sim(SNR,threshold,
              noise_sigma=20.0,
              sample_freq=2600000000.0,TISC_sample_length=16,
              num_samples=74,upsample=10,cw_flag=0,
-             peak_amplitude=25.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
+             cw_rms=25.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
              seed=5522684,draw_flag=0,digitization_factor=20.0,
              delay_type_flag=1,
              output_dir="output/",average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=1):                         
@@ -61,7 +61,7 @@ def TISC_sim(SNR,threshold,
    #Generate CW & thermal noise
    
    if cw_flag:
-      cw_noise = generate_cw(num_samples,upsample,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
+      cw_noise = generate_cw(num_samples,upsample,sample_freq,carrier_frequency,modulation_frequency,cw_rms,filter_flag)
       a_input_noise = np.add(a_input_noise,cw_noise)
       #cw_noise = generate_cw(num_samples,sample_freq,carrier_frequency,modulation_frequency,peak_amplitude,filter_flag)
       b_input_noise = np.add(b_input_noise,cw_noise)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
    #num_runs = 100
    upsample = 1
    cw_flag = True
-   cw_amplitude = 1.0*noise_sigma
+   cw_rms = 1.0*noise_sigma
    cw_frequency = 260000000.0
    modulation_frequency = 1.0
    delay_type_flag = 1

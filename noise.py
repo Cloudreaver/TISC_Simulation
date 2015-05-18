@@ -12,7 +12,6 @@ def generate_noise(sample_length, noise_sigma=20.0,filter_flag=1):
     noise = np.zeros(sample_length)
     
     # Fill array with random gaussian noise
-    # May need to switch to using Rayleigh noise
     for i in range(0, sample_length):
         noise[i] = random.gauss(0,noise_sigma)
 
@@ -26,19 +25,13 @@ if __name__ == '__main__':
 	import numpy as np
 	sample_length = 74
    
-	#upsample = 1
 	noise_sigma = 20.0
 	filter_flag = True
-        run_number = 1
-
-	#upsample_length = sample_length*upsample
 
 	noise = np.zeros(sample_length)
-        for i in range(0,run_number):
-            noise += generate_noise(sample_length,noise_sigma,filter_flag)
+	
+	noise += generate_noise(sample_length,noise_sigma,filter_flag)
     
-
-        noise /= run_number
 	t = np.linspace(0,(1/2800000000.0)*sample_length*(10**9),sample_length)
     
 	plt.figure(1)

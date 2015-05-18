@@ -47,10 +47,6 @@ three_phi_sector*: These are a version of TISC_sim that calculates everything fo
 
 TO DO:
 
-Fix the plotting of the SNR curves in TISC_sim.py
-
-Get the average subtracted algorithm working correctly.
-
-Swap antenna A and C. Currently I have the bottom antenna being A and the top being C, this is backwards. This will require some thinking because the way I handle the correlations will probalby have to change.
+Fix the plotting of the SNR curves in TISC_sim.py NO MORE ROOT
 
 Get the 3 phi sector version working. This shouldn't be hard, since it is just doing the same thing three times.
