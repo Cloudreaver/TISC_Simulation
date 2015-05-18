@@ -77,7 +77,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     
     sample_frequency = 2600000000.0
-    sample_length = 74
+    sample_length = 80
     impulse_position = 10
     upsample = 10
     draw_flag = 0

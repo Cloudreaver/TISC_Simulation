@@ -140,11 +140,13 @@ def TISC_sim(SNR,threshold,
 if __name__ == '__main__':
    #import ROOT
    import time
-   num_samples = 74
+   num_samples = 80
    impulse_position = 20
    num_bits = 3
    #signal_amp = 10.0
    draw_flag = False
+   # These delays should be negative, since A is the top antenna
+   # and we expect an upgoing signal
    b_input_delay = 0
    c_input_delay = 0
    SNR = 5

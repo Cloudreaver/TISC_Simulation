@@ -20,7 +20,9 @@ if __name__ == '__main__':
 	
 	num_samples = 80                 	# Length of Signal Window (TISC needs at least 68 samples to calculate all delays
 	upsample = 10						# Oversample factor for impulse generation
-	impulse_pos = 5                  	# Position of impulse in Ch A (must be contained within first 32 samples)
+	
+	# These delays should be negative, since A is the top antenna
+	# and we expect an upgoing signal
 	b_input_delay = 0                	# Ch B signal offset
 	c_input_delay = 0                	# Ch C signal offset
 	

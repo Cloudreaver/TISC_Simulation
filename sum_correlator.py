@@ -17,56 +17,53 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
 
    trigger_flag = 0
    if (delay_type_flag == 1):
+      # These delays are for the lower A antenna
       GLITC_delays = np.array([[0,0,0],
-                           [0,-1,2],
-                           [0,-1,3],
-                           [0,-1,4],
-                           [0,-1,5],
-                           [0,-1,6],
-                           [0,-1,7],
-                           [0,0,4],
-                           [0,0,5],
-                           [0,0,6],
-                           [0,0,7],
-                           [0,0,8],
-                           [0,0,9],
-                           [0,0,10],
-                           [0,0,11],
-                           [0,0,12],
-                           [0,0,13],
-                           [0,0,14],
-                           [0,1,14],
-                           [0,1,15],
-                           [0,1,16],
-                           [0,1,17],
-                           [0,2,18],
-                           [0,2,19],
-                           [0,2,20],
-                           [0,2,21],
-                           [0,3,21],
-                           [0,3,22],
-                           [0,3,23],
-                           [0,3,24],
-                           [0,3,25],
-                           [0,4,26],
-                           [0,4,26],
-                           [0,4,27],
-                           [0,4,28],
-                           [0,4,29],
-                           [0,5,27],
-                           [0,5,28],
-                           [0,5,29],
-                           [0,5,30],
-                           [0,5,31],
-                           [0,5,32],
-                           [0,5,33],
-                           [0,6,29],
-                           [0,6,30],
-                           [0,6,31],
-                           [0,6,32],
-                           [0,6,33],
-                           [0,6,34],
-                           [0,6,35]])
+                           [0,-7,-5],
+                           [0,-7,-6],
+                           [0,-8,-7],
+                           [0,-8,-8],
+                           [0,-8,-9],
+                           [0,-9,-8],
+                           [0,-9,-9],
+                           [0,-10,-9],
+                           [0,-10,-10],
+                           [0,-11,-11],
+                           [0,-11,-12],
+                           [0,-12,-12],
+                           [0,-12,-13],
+                           [0,-13,-13],
+                           [0,-13,-14],
+                           [0,-13,-15],
+                           [0,-14,-15],
+                           [0,-14,-16],
+                           [0,-15,-16],
+                           [0,-15,-17],
+                           [0,-16,-18],
+                           [0,-16,-19],
+                           [0,-17,-19],
+                           [0,-18,-20],
+                           [0,-18,-21],
+                           [0,-18,-22],
+                           [0,-19,-22],
+                           [0,-19,-23],
+                           [0,-20,-23],
+                           [0,-20,-24],
+                           [0,-20,-25],
+                           [0,-21,-25],
+                           [0,-21,-26],
+                           [0,-22,-26],
+                           [0,-22,-27],
+                           [0,-22,-28],
+                           [0,-23,-28],
+                           [0,-23,-29],
+                           [0,-23,-30],
+                           [0,-24,-30],
+                           [0,-24,-30],
+                           [0,-24,-31],
+                           [0,-24,-32],
+                           [0,-25,-32]
+                           ])
          
       #GLITC_delays = np.array([[0,0,0],[1,0,0]])
          
@@ -100,7 +97,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    # Use GLITC Firmware Delays
    if (delay_type_flag == 1):
       
-      # Build two 16 sample sums
+      # Build two 16 sample sums (starting with sample 2)
       for chunk in range(0,2):
          previous_square_sum = square_sum_ABC
          square_sum_ABC= np.zeros(len(GLITC_delays))
@@ -108,9 +105,9 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
          # Get sum correlation for 16 samples
          for i in range(0,len(GLITC_delays)):
             # Determine the starting position for each sample
-            a_start_pos = chunk*TISC_sample_length+GLITC_delays[i][0]
-            b_start_pos = chunk*TISC_sample_length+GLITC_delays[i][1]
-            c_start_pos = chunk*TISC_sample_length+GLITC_delays[i][2]
+            a_start_pos = chunk*TISC_sample_length+GLITC_delays[i][0]+37
+            b_start_pos = chunk*TISC_sample_length+GLITC_delays[i][1]+37
+            c_start_pos = chunk*TISC_sample_length+GLITC_delays[i][2]+37
             
             # Make sure we don't run off the front end of the array
             # These delays will be picked up in the next chunk
@@ -203,12 +200,11 @@ if __name__ == '__main__':
    import matplotlib.pyplot as plt
    from noise import generate_noise
    threshold = 300
-   num_samples = 74
+   num_samples = 80
    upsample = 10
    num_bits = 3
-   noise_mean = 0
-   noise_rms = 20
-   SNR = 2
+   noise_sigma = 20.0
+   SNR = 3
    num_upsamples = num_samples*upsample
    a_dig_waveform = np.zeros(num_upsamples)
    a_waveform = np.zeros(num_samples)
@@ -222,16 +218,15 @@ if __name__ == '__main__':
    TISC_sample_length = 16
    delay_type_flag = 1
    average_subtract_flag = 1
-   #global correlation_mean
-   correlation_mean = np.zeros(50)
+   correlation_mean = np.zeros(45)
    correlation_mean.fill(50)
    filter_flag = 0
    
-   signal_amp = SNR*2*noise_rms
+   signal_amp = SNR*2*noise_sigma
 
    for i in range(0,1):
       a_waveform = impulse_gen(num_samples,a_delay,upsample,draw_flag=0,output_dir='output/')
-      a_waveform = np.add(a_waveform,generate_noise(num_samples,noise_mean,noise_mean,filter_flag))
+      a_waveform = np.add(a_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
       
       difference=np.amax(a_waveform)-np.amin(a_waveform) # Get peak to peak voltage
       a_waveform *= (1/difference) # Normalize input
@@ -239,12 +234,7 @@ if __name__ == '__main__':
       
       a_dig_waveform = digitize(a_waveform,num_samples,num_bits,digitization_factor=20.0)
    
-   
-
-      #print num_samples
-      #print a_dig_waveform
-   
-      print i
+      #print i
       passed_flag, max_sum, as_max_sum, correlation_mean = sum_correlate(num_samples,a_dig_waveform,np.roll(a_dig_waveform,b_delay),np.roll(a_dig_waveform,c_delay),
                                                 threshold,TISC_sample_length=TISC_sample_length,delay_type_flag=delay_type_flag,
                                                 average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,trial_run_number=0)

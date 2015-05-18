@@ -12,8 +12,8 @@ if __name__ == '__main__':
    #############################################################
    # Parameters
    num_events = 100000             # Number of events to generate per loop
-   upsample = 1                     # Upsamping factor
-   digitization_factor = 1.0        # Digitization factor( *Noise_RMS)
+   upsample = 10                     # Upsamping factor
+   digitization_factor = 20.0       # Digitization factor for threshold(mV)
    num_bits = 3                     # Number of bits available to digitizer
    simulation_rate = 100.0          # Simulation Rate
    event_rate=100.0                 # Rate to generate events
@@ -24,13 +24,14 @@ if __name__ == '__main__':
    SNR_draw_flag = True             # 1=draw SNR graphs, 0=don't
    delay_type_flag = 1              # 1=use GLITC delays, 0=all possible delays
    cw_flag = True
-   carrier_frequency=260000000.0    # Hz
-   modulation_frequency=1.0  # Hz
+   carrier_frequency = 260000000.0    # Hz
+   modulation_frequency = 1.0  # Hz
    cw_factor = 2.0
    peak_amplitude = cw_factor*noise_sigma #Peak amplitude in mV
    
 
-   impulse_pos = 5                  # Position of impulse in Ch A (must be contained within first 32 samples)
+   # These delays should be negative, since A is the top antenna
+   # and we expect an upgoing signal
    b_input_delay = 0                # Ch B signal offset
    c_input_delay = 0                # Ch C signal offset
 
