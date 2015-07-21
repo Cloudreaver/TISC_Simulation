@@ -5,9 +5,9 @@ from scipy.signal import butter, lfilter
 import csv
 import numpy as np
 from scipy.fftpack import fft, ifft
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
-def butter_bandpass(lowcut, highcut, fs=2800000000.0, order=2):
+def butter_bandpass(lowcut, highcut, fs=2600000000.0, order=2):
     nyq = 0.5 * fs 
     low = lowcut / nyq
     high = highcut / nyq

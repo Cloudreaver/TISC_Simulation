@@ -14,12 +14,11 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    #ac_horz_distance = 1.17
    #ac_vert_distance = 4.7
    #ac_distance = np.sqrt((ac_horz_distance)**2+(ac_vert_distance)**2)
-
+   #print "entering correlator"
    trigger_flag = 0
    if (delay_type_flag == 1):
       # These delays are for the lower A antenna
-      GLITC_delays = np.array([[0,0,0],
-                           [0,-7,-5],
+      GLITC_delays = np.array([[0,-7,-5],
                            [0,-7,-6],
                            [0,-8,-7],
                            [0,-8,-8],
@@ -96,7 +95,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
 
    # Use GLITC Firmware Delays
    if (delay_type_flag == 1):
-      
+      #print 'Using GLITC type'
       # Build two 16 sample sums (starting with sample 2)
       for chunk in range(0,2):
          previous_square_sum = square_sum_ABC
@@ -130,16 +129,24 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       
       # Find the delays for the largest sum
       best_delays = GLITC_delays[np.argmax(total_sum)]
-      
       if(average_subtract_flag):
          # Average over sums during the trial period
          if (trial_run_number>0):
-            correlation_mean = (1.0/trial_run_number)*(((trial_run_number-1)*correlation_mean)+total_sum)
+            #print correlation_mean
+            correlation_mean = (1.0/float(trial_run_number))*(((float(trial_run_number)-1.0)*correlation_mean)+total_sum)
             
          # After the trial period (trial_run_number=0) actually subtracted the average
          as_total_sum = np.subtract(total_sum,correlation_mean)
          as_max_total_sum = np.amax(as_total_sum)
          as_best_delays = GLITC_delays[np.argmax(as_total_sum)]
+         #print trial_run_number
+         #print 'Total Sum: '+str(total_sum)
+         #print 'Correlation mean in correlator'+str(correlation_mean)
+         #print "Total Sum: "+str(total_sum[0])
+         #print "Running Mean: "+str(correlation_mean[0])
+         #print ((float(trial_run_number)-1)*float(correlation_mean[0]))
+         #print as_total_sum[0]
+         #print "\n"
       #print trial_run_number
       #print correlation_mean[10]
       #print total_sum
@@ -189,9 +196,15 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    #print "B Delay: " + str(best_b_delay)#+'\t'+str(b_input_delay-best_b_delay)
    #print "C Delay: " + str(best_c_delay)#+'\t'+str(c_input_delay-best_c_delay)
    #print "\n\n"
-   
+   """
    if (average_subtract_flag):
       return trigger_flag, max_total_sum, as_max_total_sum, correlation_mean
+   else:
+      return trigger_flag, max_total_sum
+   """
+      
+   if (average_subtract_flag):
+      return trigger_flag, max_total_sum, as_max_total_sum, correlation_mean, total_sum[0], as_total_sum[0]
    else:
       return trigger_flag, max_total_sum
 
@@ -238,7 +251,7 @@ if __name__ == '__main__':
       a_dig_waveform = digitize(a_waveform,num_samples,num_bits,digitization_factor=20.0)
    
       #print i
-      passed_flag, max_sum, as_max_sum, correlation_mean = sum_correlate(num_samples,a_dig_waveform,np.roll(a_dig_waveform,b_delay),np.roll(a_dig_waveform,c_delay),
+      passed_flag, max_sum, as_max_sum, correlation_mean, dummy1, dummy2 = sum_correlate(num_samples,a_dig_waveform,np.roll(a_dig_waveform,b_delay),np.roll(a_dig_waveform,c_delay),
                                                 threshold,TISC_sample_length=TISC_sample_length,delay_type_flag=delay_type_flag,
                                                 average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,trial_run_number=0)
    print passed_flag

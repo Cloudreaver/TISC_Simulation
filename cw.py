@@ -17,7 +17,7 @@ def generate_cw(sample_length,upsample=10,sample_frequency=2600000000.0, carrier
     upsample_frequency = sample_frequency*upsample
     
     # Convert peak-to-peak to rms value (0.707 is the RMS of a sine wave with A=1)
-    peak_amplitude = cw_rms/0.707
+    peak_amplitude = cw_rms#/0.707
 
     # Make large sample length to avoid edge effects
     expanded_sample_length = sample_length * 2
@@ -51,7 +51,7 @@ def generate_cw(sample_length,upsample=10,sample_frequency=2600000000.0, carrier
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    sample_length = 74
+    sample_length = 80
     upsample = 10
     sample_frequency =    2600000000.0
     carrier_frequency =    500000000.0 # Dominant freq. seen in ANITA3

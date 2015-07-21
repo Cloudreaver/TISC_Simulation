@@ -2,4 +2,4 @@
 
 cd ~/thesis_code #directory file are in
 
-qsub three_phi_run_loops_sim.sh
+qsub three_phi_sector_TISC_sim.sh
