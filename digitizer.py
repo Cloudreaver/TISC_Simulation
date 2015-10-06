@@ -5,7 +5,7 @@
 import random
 import numpy as np
 
-def digitize(input_array,num_samples,num_bits,digitization_factor=1):
+def digitize(input_array,num_samples,num_bits,digitization_factor=32.0,debug=False):
    
    #noise_rms *= digitization_factor
          
@@ -28,23 +28,25 @@ if __name__ == '__main__':
    from noise import generate_noise
    import matplotlib.pyplot as plt
 
+   debug=True
    num_samples = 128
    num_bits = 3
-   noise_sigma = 20.0
-   digitization_factor = 20.0
+   noise_sigma = 32.0
+   digitization_factor = 32.0
    sample_frequency = 2600000000.0
 
    sample_noise = np.zeros(num_samples)
    dig_waveform = np.zeros(num_samples)
    sine_waveform = np.zeros(num_samples)
 
-   sample_noise = generate_noise(num_samples,noise_mean=0.0,noise_sigma=noise_sigma,filter_flag=1)
+   sample_noise = generate_noise(num_samples,noise_sigma=noise_sigma,filter_flag=1)
    
    for i in range(0,int(num_samples)):
       sine_waveform[i] = 3.0*noise_sigma*np.sin(2*np.pi*50000000.0*(float(i)/sample_frequency))
          
    sample = sine_waveform + sample_noise
-   dig_waveform = digitize(sample,num_samples,num_bits,digitization_factor)
+   #sample = sample_noise
+   dig_waveform = digitize(sample,num_samples,num_bits,digitization_factor,debug=debug)
    
    t = np.linspace(0,(1/2800000000.0)*num_samples*(10**9),num_samples)
 

@@ -12,22 +12,18 @@ from noise import generate_noise
 from digitizer import digitize
 from sum_correlator import sum_correlate
 from cw import generate_cw
+#import matplotlib.pyplot as plt
 
 def TISC_sim(SNR,threshold,
              b_input_delay,c_input_delay,num_bits=3,
-             noise_sigma=20.0,
+             noise_sigma=32.0,
              sample_freq=2600000000.0,TISC_sample_length=16,
-             num_samples=74,upsample=10,cw_flag=0,
+             num_samples=80,upsample=10,cw_flag=0,
              cw_amplitude=20.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
-             seed=5522684,draw_flag=0,digitization_factor=20.0,
+             seed=5522684,draw_flag=0,digitization_factor=32.0,
              delay_type_flag=1,
-             output_dir="output/",average_subtract_flag=0,abc_correlation_mean=np.zeros(44),
-             def_correlation_mean=np.zeros(44),ghi_correlation_mean=np.zeros(44),trial_run_number=1):
-   
-
-   
-                           
-
+             output_dir="output/",average_subtract_flag=0,abc_correlation_mean=np.zeros(46),
+             def_correlation_mean=np.zeros(44),ghi_correlation_mean=np.zeros(46),trial_run_number=1,boresight=0,baseline=0):
    
    # Setup
    save_output_flag = 0
@@ -42,6 +38,7 @@ def TISC_sim(SNR,threshold,
    def_as_max_sum = 0.0
    ghi_max_sum = 0.0
    ghi_as_max_sum = 0.0
+   timestep = 1.0/sample_freq
    
    # Fill numpy arrays with zeros
    a_input_noise = np.zeros(num_samples)
@@ -160,16 +157,32 @@ def TISC_sim(SNR,threshold,
       difference=np.amax(a_input_signal)-np.amin(a_input_signal) # Get peak to peak voltage
       a_input_signal *= (1/difference) # Normalize input
       a_input_signal *= signal_amp # Amplify
-      b_input_signal = np.concatenate([a_input_signal[:num_samples+b_input_delay],empty_list[:(-1)*b_input_delay]])
-      c_input_signal = np.concatenate([a_input_signal[:num_samples+c_input_delay],empty_list[:(-1)*c_input_delay]])
+      #b_input_signal = np.concatenate([a_input_signal[:num_samples+b_input_delay],empty_list[:(-1)*b_input_delay]])
+      #c_input_signal = np.concatenate([a_input_signal[:num_samples+c_input_delay],empty_list[:(-1)*c_input_delay]])
+      b_input_signal = np.concatenate([a_input_signal[-b_input_delay:],empty_list[:(-1)*b_input_delay]])
+      c_input_signal = np.concatenate([a_input_signal[-c_input_delay:],empty_list[:(-1)*c_input_delay]])
       
-      d_input_signal = a_input_signal*0.585 # Average dB loss at -22.5 degrees
-      e_input_signal = b_input_signal*0.585 # from Seavey measurements
-      f_input_signal = c_input_signal*0.585
-      
-      g_input_signal = a_input_signal*0.713 # Average dB loss at +22.5 degrees
-      h_input_signal = b_input_signal*0.713 # from Seavey measurements
-      i_input_signal = c_input_signal*0.713
+      if(boresight==0):
+         d_input_signal = a_input_signal*0.776 # Average dB loss at -22.5 degrees
+         e_input_signal = b_input_signal*0.776 # from Seavey measurements
+         f_input_signal = c_input_signal*0.776
+         
+         g_input_signal = a_input_signal*0.835 # Average dB loss at +22.5 degrees
+         h_input_signal = b_input_signal*0.835 # from Seavey measurements
+         i_input_signal = c_input_signal*0.835
+      elif(boresight==1):
+         # For event between two phi sectors, the two antennas are down by about -0.5dB at
+         a_input_signal = a_input_signal*0.885 # Average dB los at +11.25 degrees
+         b_input_signal = b_input_signal*0.885 # from Seavey measurements
+         c_input_signal = c_input_signal*0.885
+
+         d_input_signal = a_input_signal*0.962 # Average dB loss at -11.25 degrees
+         e_input_signal = b_input_signal*0.962 # from Seavey measurements
+         f_input_signal = c_input_signal*0.962
+         
+         g_input_signal = a_input_signal*0.650 # Average dB loss at +-33.75 degrees
+         h_input_signal = b_input_signal*0.650 # from Seavey measurements
+         i_input_signal = c_input_signal*0.650
       
       
 
@@ -194,7 +207,9 @@ def TISC_sim(SNR,threshold,
       h_input_signal_noise = h_input_noise
       i_input_signal_noise = i_input_noise
 ##########################################
-
+   #time = np.linspace(0.0,timestep*num_samples,num_samples)
+   #plt.plot(time,a_input_noise,time,b_input_noise,time,c_input_noise)
+   #plt.show()
 ##########################################
    # Digitized the incoming signal and noise (RITC)
    a_dig_waveform = digitize(a_input_signal_noise,num_samples,num_bits,digitization_factor)
@@ -208,23 +223,25 @@ def TISC_sim(SNR,threshold,
    i_dig_waveform = digitize(i_input_signal_noise,num_samples,num_bits,digitization_factor)
 
 ##########################################
-
+   
 ##########################################
    # Run the signal through the GLITC module to get trigger
    if(average_subtract_flag):
-      abc_trigger_flag, abc_max_sum , abc_as_max_sum, abc_correlation_mean, abc_test_sum, abc_as_test_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag,correlation_mean=abc_correlation_mean,trial_run_number=trial_run_number)
-      def_trigger_flag, def_max_sum , def_as_max_sum, def_correlation_mean, def_test_sum, def_as_test_sum = sum_correlate(num_samples,d_dig_waveform,e_dig_waveform,f_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag,correlation_mean=def_correlation_mean,trial_run_number=trial_run_number)
-      ghi_trigger_flag, ghi_max_sum , ghi_as_max_sum, ghi_correlation_mean, ghi_test_sum, ghi_as_test_sum = sum_correlate(num_samples,g_dig_waveform,h_dig_waveform,i_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag,correlation_mean=ghi_correlation_mean,trial_run_number=trial_run_number)
       
-   else:
-      abc_trigger_flag, abc_max_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
+      abc_trigger_flag, abc_max_sum , abc_as_max_sum, abc_correlation_mean, abc_test_sum, abc_as_test_sum,as_abc_angle,abc_angle = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
                                                 average_subtract_flag=average_subtract_flag,correlation_mean=abc_correlation_mean,trial_run_number=trial_run_number)
-      def_trigger_flag, def_max_sum = sum_correlate(num_samples,d_dig_waveform,e_dig_waveform,f_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
+      def_trigger_flag, def_max_sum , def_as_max_sum, def_correlation_mean, def_test_sum, def_as_test_sum,as_def_angle,def_angle = sum_correlate(num_samples,d_dig_waveform,e_dig_waveform,f_dig_waveform,threshold,baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
                                                 average_subtract_flag=average_subtract_flag,correlation_mean=def_correlation_mean,trial_run_number=trial_run_number)
-      ghi_trigger_flag, ghi_max_sum = sum_correlate(num_samples,g_dig_waveform,h_dig_waveform,i_dig_waveform,threshold,TISC_sample_length,delay_type_flag=delay_type_flag,
+      ghi_trigger_flag, ghi_max_sum , ghi_as_max_sum, ghi_correlation_mean, ghi_test_sum, ghi_as_test_sum,as_ghi_angle,ghi_angle = sum_correlate(num_samples,g_dig_waveform,h_dig_waveform,i_dig_waveform,threshold,baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=ghi_correlation_mean,trial_run_number=trial_run_number)
+      #abc_max_sum
+      #print len(a_dig_waveform)  
+   else:
+      abc_trigger_flag, abc_max_sum,abc_andle = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=abc_correlation_mean,trial_run_number=trial_run_number)
+      def_trigger_flag, def_max_sum,def_angle = sum_correlate(num_samples,d_dig_waveform,e_dig_waveform,f_dig_waveform,threshold,baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=def_correlation_mean,trial_run_number=trial_run_number)
+      ghi_trigger_flag, ghi_max_sum,ghi_angle = sum_correlate(num_samples,g_dig_waveform,h_dig_waveform,i_dig_waveform,threshold,baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
                                                 average_subtract_flag=average_subtract_flag,correlation_mean=ghi_correlation_mean,trial_run_number=trial_run_number)
       #print abc_max_sum
       #print def_max_sum
@@ -244,9 +261,9 @@ def TISC_sim(SNR,threshold,
    #dummy = raw_input('Press any key to close')
 
    if (average_subtract_flag):
-      return abc_max_sum,abc_as_max_sum,def_max_sum,def_as_max_sum,ghi_max_sum,ghi_as_max_sum,abc_correlation_mean, def_correlation_mean, ghi_correlation_mean
+      return abc_max_sum,abc_as_max_sum,def_max_sum,def_as_max_sum,ghi_max_sum,ghi_as_max_sum,abc_correlation_mean, def_correlation_mean, ghi_correlation_mean,as_abc_angle,abc_angle,as_def_angle,def_angle,as_ghi_angle,ghi_angle
    else:
-      return abc_max_sum,def_max_sum,ghi_max_sum
+      return abc_max_sum,def_max_sum,ghi_max_sum,abc_angle,def_angle,ghi_angle
 
 if __name__ == '__main__':
    #import ROOT
@@ -260,7 +277,7 @@ if __name__ == '__main__':
    # and we expect an upgoing signal
    b_input_delay = -8
    c_input_delay = -7
-   SNR = 10.0
+   SNR = 4.0
    threshold = 100
    noise_sigma = 20
    #num_runs = 100

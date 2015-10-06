@@ -9,8 +9,8 @@
 
 #OPTIONS FOR PBS
 
-cd /home/hupe/thesis_code #probably not necessary, precaution
-source /home/hupe/.bash_profile
+cd /home/hupe.2/thesis_code #probably not necessary, precaution
+source /home/hupe.2/.bash_profile
 
 
 ./run_3_phi_TISC_sim_at_rate.py #executable I want to run

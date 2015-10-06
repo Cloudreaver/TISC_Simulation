@@ -10,15 +10,15 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_events = 1             # Number of events to generate per loop
+   num_events = 20000             # Number of events to generate per loop
    upsample = 10                     # Upsamping factor
-   digitization_factor = 20.0       # Digitization factor for threshold(mV)
+   digitization_factor = 32.0       # Digitization factor for threshold(mV)
    num_bits = 3                     # Number of bits available to digitizer
-   simulation_rate = 200.0          # Simulation Rate
-   event_rate=100.0                 # Rate to generate events
+   simulation_rate = 162500000.0          # Simulation Rate
+   event_rate=81250000.0          # Rate to generate events
    num_runs = int(num_events*(simulation_rate/event_rate)) 
    num_samples = 80                 # Length of Signal Window
-   noise_sigma = 20.0               # Noise Sigma in mV
+   noise_sigma = 32.0               # Noise Sigma in mV
    draw_flag = False                # 1=draw event graphs, 0=don't                        
    SNR_draw_flag = True             # 1=draw SNR graphs, 0=don't
    delay_type_flag = 1              # 1=use GLITC delays, 0=all possible delays
@@ -28,6 +28,7 @@ if __name__ == '__main__':
    cw_rms = 2.0*noise_sigma #Peak amplitude in mV
    average_subtract_flag = 1
    num_trials = 100
+   threshold_to_energy = ((((digitization_factor*(10**(-3)))**2)/50.0)*(1.0/2600000000.0)*32.0)*10**12 # to get to pJ
    
 
    # These delays should be negative, since A is the top antenna
@@ -37,7 +38,7 @@ if __name__ == '__main__':
 
    low_SNR = 0.0                    # Lowest SNR
    high_SNR = 5.0                   # Highest SNR
-   step_SNR = 0.25                 # SNR interval
+   step_SNR = 0.5                 # SNR interval
 
    low_threshold = 0              # Lowest Threshold
    high_threshold = 1000          # Highest Threshold
@@ -64,9 +65,9 @@ if __name__ == '__main__':
 
    # Write settings file
    if(cw_flag):
-      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_CW"+str(cw_rms)+"_Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/1_phi_sector_TISC_SIM_CW"+str(cw_rms)+"_Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    else:
-      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/TISC_SIM_"+"Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
+      output_dir = str(os.path.dirname(os.path.realpath(__file__))+"/output/1_phi_sector_TISC_SIM_"+"Num"+str(num_runs)+"_"+time.strftime('%Y_%m_%d_%H.%M.%S'))
    if not os.path.exists(output_dir):
       os.makedirs(output_dir)
    settings_filename = open(output_dir+"/settings.txt","w")
@@ -131,7 +132,7 @@ if __name__ == '__main__':
 
 	####################### Step over time #############################
 
-   data_filename = open(output_dir+"/output.dat","w")
+   data_filename = open(output_dir+"/graph_output.dat","w")
    
    #threshold_for_branch = np.zeros(1)
    # Start Loop over SNR values
@@ -176,7 +177,7 @@ if __name__ == '__main__':
 
       # Calculate trigger rate for current threshold
       for threshold_counter in range(0,len(threshold)):
-         trigger_rate[threshold_counter] = (float(num_passed_events[threshold_counter])/float(num_runs))*event_rate
+         trigger_rate[threshold_counter] = (float(num_passed_events[threshold_counter])/float(num_runs))*simulation_rate
          data_filename.write(str(SNR[SNR_counter])+','+str(threshold[threshold_counter])+','+str(trigger_rate[threshold_counter])+'\n')
          #print str(SNR[SNR_counter])+'\t'+str(threshold[threshold_counter])+'\t'+str(trigger_rate[threshold_counter])
 

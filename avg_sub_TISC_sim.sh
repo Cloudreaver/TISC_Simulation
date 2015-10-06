@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l walltime=250:00:00
+#PBS -l walltime=999:00:00
 #PBS -l nodes=1:fast:ppn=1
 #PBS -m e
 #PBS -M hupe.2@buckeyemail.osu.edu
@@ -9,8 +9,8 @@
 
 #OPTIONS FOR PBS
 
-cd /home/hupe/thesis_code #probably not necessary, precaution
-source /home/hupe/.bash_profile
+cd /home/hupe.2/thesis_code #probably not necessary, precaution
+source /home/hupe.2/.bash_profile
 
 
-./run_avg_subtracted_TISC_sim.py #executable I want to run
+./run_TISC_sim_at_rate.py #executable I want to run

@@ -26,8 +26,8 @@ def calculate_angles():
 	#num_angles = len(GLITC_delays)
 	#print "Number of angles: " +str(num_angles)
 	#print "Distance from antenna C to B: "+str(bc_distance)
-	print "Distance from antenna C to top A: "+str(ab_top_distance)
-	print "Distance from antenna C to bot A: "+str(ab_bot_distance)
+	print "Distance from antenna B to top A: "+str(ab_top_distance)
+	print "Distance from antenna B to bot A: "+str(ab_bot_distance)
 	print "Distance from antenna C to top A: "+str(ac_top_distance)
 	print "Distance from antenna C to bot A: "+str(ac_bot_distance)
 	"""
@@ -53,11 +53,11 @@ def calculate_angles():
 	ac_bot_delay = np.zeros(100)
 	counter = 0
 	
-	top_outfile = open('GLITC_upper_delays.dat','w')
-	top_outfile.write('A_upper_delay,\tA_upper-B_delay,\tA_upper-C_delay\n')
+	top_outfile = open('GLITC_long_baseline_delays.dat','w')
+	top_outfile.write('Elevation_angle,\tA_long_baseline_delay,\tA-B_delay,\tA-C_delay\n')
 	
-	bot_outfile = open('GLITC_lower_delays.dat','w')
-	bot_outfile.write('A_lower_delay,\tA_lower-B_delay,\tA_lower-C_delay\n')
+	bot_outfile = open('GLITC_short_baseline_delays.dat','w')
+	bot_outfile.write('Elevation_angle,\tA_short_baseline_delay,\tA-B_delay,\tA-C_delay\n')
 	
 	lowest_angle = -10
 	highest_angle = 50
@@ -85,7 +85,7 @@ def calculate_angles():
 		#print "Save Delays"
 		if (unique_delay):
 			#print 'writing top delay'
-			top_outfile.write('0,\t'+str(ab_top_delay[counter])+',\t'+str(ac_top_delay[counter])+'\n')
+			top_outfile.write(str((-1)*angle[i])+',\t0,\t'+str(ab_top_delay[counter])+',\t'+str(ac_top_delay[counter])+'\n')
 			counter +=1 
 		#print counter
 	
@@ -109,7 +109,7 @@ def calculate_angles():
 		#print "Save Delays"
 		if (unique_delay):
 			#print 'writing bot delay'
-			bot_outfile.write('0,\t'+str(ab_bot_delay[counter])+',\t'+str(ac_bot_delay[counter])+'\n')
+			bot_outfile.write(str((-1)*angle[i])+',\t0,\t'+str(ab_bot_delay[counter])+',\t'+str(ac_bot_delay[counter])+'\n')
 			counter +=1 
 		#print counter
 		

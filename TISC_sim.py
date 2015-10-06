@@ -15,11 +15,11 @@ from datetime import datetime
 
 def TISC_sim(SNR,threshold,
              b_input_delay,c_input_delay,num_bits=3,
-             noise_sigma=20.0,
+             noise_sigma=32.0,
              sample_freq=2600000000.0,TISC_sample_length=16,
              num_samples=74,upsample=10,cw_flag=0,
              cw_rms=25.0,carrier_frequency=260000000.0,modulation_frequency=1.0,
-             seed=5522684,draw_flag=0,digitization_factor=20.0,
+             seed=5522684,draw_flag=0,digitization_factor=32.0,
              delay_type_flag=1,
              output_dir="output/",average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=1):                         
 
@@ -92,6 +92,7 @@ def TISC_sim(SNR,threshold,
       # Generate Signal and Amplify
       a_input_signal = impulse_gen(num_samples,upsample,draw_flag=draw_flag,output_dir=output_dir)
       difference=np.amax(a_input_signal)-np.amin(a_input_signal) # Get peak to peak voltage
+
       a_input_signal *= (1/difference) # Normalize input
       a_input_signal *= signal_amp # Amplify
       b_input_signal = np.concatenate([a_input_signal[:num_samples+b_input_delay],empty_list[:(-1)*b_input_delay]])
