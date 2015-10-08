@@ -14,7 +14,7 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_events = 10000    # Number of events to generate per loop
+   num_events = 10000   # Number of events to generate per loop
    boresight = 0
    baseline = 0
    angle_range = 2.5
@@ -34,17 +34,17 @@ if __name__ == '__main__':
    modulation_frequency = 1000.0      # Hz
    cw_amplitude = 2.0*noise_sigma #Peak amplitude in mV
    average_subtract_flag = 1
-   num_trials = 100
+   num_trials = 2
    threshold_to_energy = 1.0#((((digitization_factor*(10**(-3)))**2)/50.0)*(1.0/2600000000.0)*32.0)*10**12 # to get to pJ
    #print threshold_to_energy
    # These delays should be negative, since A is the top antenna
    # and we expect an upgoing signal
    b_input_delay = -15                # Ch B signal offset
-   c_input_delay = -17                # Ch C signal offset
+   c_input_delay = -17              # Ch C signal offset
 
    low_SNR = 0.0                   # Lowest SNR
    high_SNR = 5.0                 # Highest SNR
-   step_SNR = 0.25                # SNR interval
+   step_SNR = 1.0                # SNR interval
 
    low_threshold = 0             # Lowest Threshold
    high_threshold = 4095        # Highest Threshold
@@ -67,14 +67,32 @@ if __name__ == '__main__':
 
    SNR = np.linspace(low_SNR,high_SNR,((high_SNR-low_SNR)/step_SNR)+1)
    
-   if(baseline==0):
-      abc_correlation_mean = np.zeros(63)
-      def_correlation_mean = np.zeros(63)
-      ghi_correlation_mean = np.zeros(63)
-   elif(baseline==1):
-      abc_correlation_mean = np.zeros(46)
-      def_correlation_mean = np.zeros(46)
-      ghi_correlation_mean = np.zeros(46)
+   
+   num_delays = [63,46]
+   # Phi sectors have alternating baselines
+   if(boresight==0):
+      if(baseline==0):
+         abc_baseline = 0
+         def_baseline = 1
+         ghi_baseline = 1
+      elif(baseline==1):
+         abc_baseline = 1
+         def_baseline = 0
+         ghi_baseline = 0
+   elif(boresight==1):
+      if(baseline==0):
+         abc_baseline = 1
+         def_baseline = 0
+         ghi_baseline = 1
+      elif(baseline==1):
+         abc_baseline = 1
+         def_baseline = 0
+         ghi_baseline = 0
+   
+
+   abc_correlation_mean = np.zeros(num_delays[abc_baseline])
+   def_correlation_mean = np.zeros(num_delays[def_baseline])
+   ghi_correlation_mean = np.zeros(num_delays[ghi_baseline])
 
    # Write settings file
    if(cw_flag):
@@ -171,7 +189,7 @@ if __name__ == '__main__':
    graph_filename.write("SNR,threshold,trigger_rate\n")
    data_filename = open(output_dir+"/data_output.dat","w")
    data_filename.write("time_step,SNR,thermal_noise_sigma,cw_amplitude,carrier_frequency,modulation_frequency,abc_max,abc_as_max,abc_correlation_mean,def_max,def_as_max,def_correlation_mean,ghi_max,ghi_as_max,ghi_correlation_mean")
-   plt.figure(figsize=(16,12))
+   #plt.figure(figsize=(16,12))
    #threshold_for_branch = np.zeros(1)
    # Start Loop over SNR values
   
@@ -207,6 +225,7 @@ if __name__ == '__main__':
             #print def_as_max_sum
             #print ghi_as_max_sum
             #if(SNR[SNR_counter]==5.00):
+            #print as_abc_angle,as_def_angle,as_ghi_angle
             
             
             #print abc_as_max_sum+def_as_max_sum+ghi_as_max_sum
@@ -230,14 +249,16 @@ if __name__ == '__main__':
          #print as_def_angle
          #print as_ghi_angle
          first_angle_range = np.abs(np.amax([as_abc_angle,as_def_angle])-np.min([as_abc_angle,as_def_angle]))
-         first_hist.append(first_angle_range)
+         first_hist.append(as_abc_angle)
+         first_hist.append(as_def_angle)
+         first_hist.append(as_ghi_angle)
          second_angle_range = np.abs(np.amax([as_abc_angle,as_ghi_angle])-np.min([as_abc_angle,as_ghi_angle]))
-         second_hist.append(second_angle_range)
+         #second_hist.append(second_angle_range)
          #print "First Angle range: %1.2f"%(first_angle_range)
          #print "Second Angle range: %1.2f"%(second_angle_range)
          #print "\n"
          if((first_angle_range>angle_range)and(second_angle_range>angle_range)):
-            three_phi_max_sum==0
+            three_phi_max_sum=0
             
          threshold_drop_flag=False
          for threshold_counter in range(0,len(threshold)):
@@ -251,14 +272,15 @@ if __name__ == '__main__':
             elif(threshold_drop_flag == False):
                #print threshold[threshold_counter]
                threshold_drop_flag = True 
-      
-      #plt.hist(first_hist,bins=25)
-      #plt.hist(second_hist,bins=25)
+      plt.figure(4)
+      plt.hist(np.array(first_hist),bins=25)
+      #plt.hist(np.array(second_hist),bins=25)
+      plt.title("SNR: %.2f"%SNR[SNR_counter])
       #print first_hist
       #print second_hist
       #plt.clf()
       #plt.hist(sum_hist,bins=25)
-      #plt.show()
+      plt.show()
       # Calculate trigger rate for current threshold
       for threshold_counter in range(0,len(threshold)):
          trigger_rate[threshold_counter] = (float(num_passed_events[threshold_counter])*float(simulation_rate))/float(num_runs)
@@ -271,10 +293,11 @@ if __name__ == '__main__':
       # Close Threshold Loop 
       #print threshold
       #print trigger_rate
+      plt.figure(1)
       plt.semilogy(threshold*threshold_to_energy,trigger_rate,label='SNR: '+str(SNR[SNR_counter]))
    plt.legend()
    plt.grid(True)
-   plt.xlabel("Threshold [pJ]")
+   plt.xlabel("Threshold [DAC]")
    plt.ylabel("Trigger Rate [Hz]")
    if(cw_flag):
       plt.title("TISC SNR Curves, Simulation Rate: %1.2fMHz, Event Rate: %1.2fMHz, CW Amp: %d*Noise RMS" % (simulation_rate,event_rate,cw_amplitude/noise_sigma))
@@ -282,14 +305,14 @@ if __name__ == '__main__':
       #plt.title("TISC SNR Curves, Simulation Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/1000000.0,event_rate/1000000.0))
       if(boresight==0):
          if(baseline==0):
-            plt.title("Simulated On Boresight, Long Baseline TISC SNR Curves, Simulation Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
+            plt.title("Sim On Boresight, Long Baseline TISC SNR Curves, Sim Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
          elif(baseline==1):
-            plt.title("Simulated On Boresight, Short Baseline TISC SNR Curves, Simulation Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
+            plt.title("Sim On Boresight, Short Baseline TISC SNR Curves, Sim Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
       if(boresight==1):
          if(baseline==0):
-            plt.title("Simulated Off Boresight, Long Baseline TISC SNR Curves, Simulation Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
+            plt.title("Sim Off Boresight, Long Baseline TISC SNR Curves, Sim Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
          elif(baseline==1):
-            plt.title("Simulated Off Boresight, Short Baseline TISC SNR Curves, Simulation Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
+            plt.title("Sim Off Boresight, Short Baseline TISC SNR Curves, Sim Rate: %1.2fMHz, Event Rate: %1.2fMHz" % (simulation_rate/10**6,event_rate/10**6))
    #plt.axis([low_threshold*threshold_to_energy,high_threshold*threshold_to_energy,0.0,1000000000.0])
    #plt.show()
    plt.savefig(str(output_dir)+"/TISC_SNR_canvas.png")

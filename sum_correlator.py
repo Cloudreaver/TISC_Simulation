@@ -165,6 +165,8 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
                continue
             
             # Add each sample at given delay
+            #print len(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length])
+            #print len(b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
             add_AB = np.add(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
             #print add_AB
             add_ABC = np.add(add_AB,c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
@@ -320,14 +322,18 @@ if __name__ == '__main__':
    t = np.linspace(0,timestep*num_samples,num_samples)
    signal_amp = SNR*2*noise_sigma
 
-   for i in range(0,100):
+   for i in range(0,1):
       a_waveform = impulse_gen(num_samples,a_delay,upsample,draw_flag=0,output_dir='output/')
-      
+      empty_list = np.zeros(num_samples)
       difference=np.amax(a_waveform)-np.amin(a_waveform) # Get peak to peak voltage
       a_waveform *= (1/difference) # Normalize input
       a_waveform *= signal_amp # Amplify
       a_imp_dig_wfm = digitize(a_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
       a_waveform = np.add(a_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
+      b_waveform = np.concatenate([a_waveform[-b_delay:],empty_list[:(-1)*b_delay]])
+      c_waveform = np.concatenate([a_waveform[-c_delay:],empty_list[:(-1)*c_delay]])
+      b_waveform = np.add(b_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
+      c_waveform = np.add(c_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
       #a_waveform[40]=3.5
       #a_waveform[41]=-3.5
       
@@ -335,16 +341,20 @@ if __name__ == '__main__':
       
       
       a_dig_waveform = digitize(a_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
+      b_dig_waveform = digitize(b_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
+      c_dig_waveform = digitize(c_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
+      
       
       start =37
       end = start+32
 
-      print np.sum(np.square(3*a_dig_waveform[start:end]))
-      plt.plot(t[start:end],a_dig_waveform[start:end],t[start:end],a_imp_dig_wfm[start:end])
+      #print np.sum(np.square(3*a_dig_waveform[start:end]))
+      #plt.plot(t[start:end],a_dig_waveform[start:end],t[start:end],b_dig_waveform[start:end],t[start:end],c_dig_waveform[start:end])
+      plt.plot(t,a_dig_waveform,t,b_dig_waveform,t,c_dig_waveform)
       plt.show()
       #print a_dig_waveform
       #print i
-      passed_flag, max_sum, as_max_sum, correlation_mean, dummy1,dummy2,max_sum_angle, as_max_sum_angle = sum_correlate(num_samples,a_dig_waveform,np.roll(a_dig_waveform,b_delay),np.roll(a_dig_waveform,c_delay),
+      passed_flag, max_sum, as_max_sum, correlation_mean, dummy1,dummy2,max_sum_angle, as_max_sum_angle = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,
                                                 threshold,baseline,TISC_sample_length=TISC_sample_length,delay_type_flag=delay_type_flag,
                                                 average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,trial_run_number=0,debug=debug)
    print passed_flag, max_sum, as_max_sum, max_sum_angle, as_max_sum_angle
