@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
    low_SNR = 0.0                   # Lowest SNR
    high_SNR = 5.0                 # Highest SNR
-   step_SNR = 1.0                # SNR interval
+   step_SNR = 0.25                # SNR interval
 
    low_threshold = 0             # Lowest Threshold
    high_threshold = 4095        # Highest Threshold
@@ -170,7 +170,7 @@ if __name__ == '__main__':
 					cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
 					noise_sigma=noise_sigma,average_subtract_flag=1,
 					abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-               trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline)
+               trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
       else:
          # Thermal event					
          d1,d2,d3,d4,d5,d6, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,d7,d8,d9,d10,d11,d12 = TISC_sim(0.0,100,
@@ -178,7 +178,7 @@ if __name__ == '__main__':
                cw_flag=0,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
                noise_sigma=noise_sigma,average_subtract_flag=1,
                abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-               trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline)
+               trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
 			#print "#########################"			
 	# Set offsets for plots				
    max_offset = 100
@@ -197,7 +197,7 @@ if __name__ == '__main__':
       first_hist = []
       second_hist = []
       sum_hist = []
-      print "Starting SNR %1.2f"%SNR[SNR_counter]
+      #print "Starting SNR %1.2f"%SNR[SNR_counter]
       # Start loop over threshold values
       
       # Reset values
@@ -219,7 +219,7 @@ if __name__ == '__main__':
 						cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
 						noise_sigma=noise_sigma,average_subtract_flag=1,
 						abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline)
+                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
             data_filename.write('\n'+str(timestep)+','+str(0.0)+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(abc_as_max_sum)+','+str(def_max_sum)+','+str(def_as_max_sum)+','+str(ghi_max_sum)+','+str(ghi_as_max_sum))
             #print abc_as_max_sum
             #print def_as_max_sum
@@ -236,10 +236,10 @@ if __name__ == '__main__':
 						cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
 						noise_sigma=noise_sigma,average_subtract_flag=1,
 						abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline)
+                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
             data_filename.write('\n'+str(timestep)+','+str(SNR[SNR_counter])+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(abc_as_max_sum)+','+str(def_max_sum)+','+str(def_as_max_sum)+','+str(ghi_max_sum)+','+str(ghi_as_max_sum))
             
-         three_phi_max_sum = abc_as_max_sum+def_as_max_sum+ghi_as_max_sum
+         three_phi_max_sum = abc_max_sum+def_max_sum+ghi_max_sum
          sum_hist.append(three_phi_max_sum)
          #print abc_as_max_sum
          #print def_as_max_sum
@@ -248,11 +248,11 @@ if __name__ == '__main__':
          #print as_abc_angle
          #print as_def_angle
          #print as_ghi_angle
-         first_angle_range = np.abs(np.amax([as_abc_angle,as_def_angle])-np.min([as_abc_angle,as_def_angle]))
+         first_angle_range = np.abs(np.amax([abc_angle,as_def_angle])-np.min([abc_angle,def_angle]))
          first_hist.append(as_abc_angle)
          first_hist.append(as_def_angle)
          first_hist.append(as_ghi_angle)
-         second_angle_range = np.abs(np.amax([as_abc_angle,as_ghi_angle])-np.min([as_abc_angle,as_ghi_angle]))
+         second_angle_range = np.abs(np.amax([abc_angle,ghi_angle])-np.min([abc_angle,ghi_angle]))
          #second_hist.append(second_angle_range)
          #print "First Angle range: %1.2f"%(first_angle_range)
          #print "Second Angle range: %1.2f"%(second_angle_range)
@@ -272,6 +272,7 @@ if __name__ == '__main__':
             elif(threshold_drop_flag == False):
                #print threshold[threshold_counter]
                threshold_drop_flag = True 
+
       plt.figure(4)
       plt.hist(np.array(first_hist),bins=25)
       #plt.hist(np.array(second_hist),bins=25)

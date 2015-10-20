@@ -5,8 +5,8 @@ import random
 from anita_filter import butter_bandpass, butter_bandpass_filter
 from scipy.signal import resample
 
-def generate_noise(sample_length, noise_sigma=32.0,filter_flag=1):
-    random.seed()
+def generate_noise(sample_length, noise_sigma=32.0,filter_flag=1,seed=None):
+    random.seed(seed)
 
     # Define the noise array
     noise = np.zeros(sample_length)
@@ -29,7 +29,7 @@ if __name__ == '__main__':
 	filter_flag = True
 
 	noise = np.zeros(sample_length)
-	noise = generate_noise(sample_length,noise_sigma,filter_flag)
+	noise = generate_noise(sample_length,noise_sigma,filter_flag,seed=1)
 	t = np.linspace(0,(1/2800000000.0)*sample_length*(10**9),sample_length)
     
 	plt.figure(1)

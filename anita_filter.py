@@ -8,7 +8,7 @@ from scipy.fftpack import fft, ifft
 
 #import matplotlib.pyplot as plt
 
-def butter_bandpass(lowcut, highcut, fs=2600000000.0, order=2):
+def butter_bandpass(lowcut, highcut, fs=2600000000.0, order=8):
     nyq = 0.5 * fs 
     low = lowcut / nyq
     high = highcut / nyq
@@ -16,7 +16,7 @@ def butter_bandpass(lowcut, highcut, fs=2600000000.0, order=2):
     return b, a
 
 
-def butter_bandpass_filter(data, lowcut=250000000.0, highcut=900000000.0, fs=2600000000.0, order=2):
+def butter_bandpass_filter(data, lowcut=180000000.0, highcut=1200000000.0, fs=2600000000.0, order=8):
     from noise import generate_noise
     b, a = butter_bandpass(lowcut, highcut, fs, order=order)
     y = generate_noise(len(a),noise_sigma=32.0,filter_flag=0)

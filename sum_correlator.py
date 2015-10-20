@@ -44,7 +44,7 @@ def read_GLITC_delays(baseline):
       
    return GLITC_delays
 
-def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,baseline,TISC_sample_length=16,delay_type_flag=0,average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=0,debug=False):
+def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,baseline,TISC_sample_length=16,delay_type_flag=0,average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=0,six_phi_sector_add=False,debug=False):
    #speed_of_light = 2.99*10**8
    #sample_period = 3.5810**(-10)
    #ab_distance = 1.0
@@ -52,6 +52,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    #ac_vert_distance = 4.7
    #ac_distance = np.sqrt((ac_horz_distance)**2+(ac_vert_distance)**2)
    #print "entering correlator"
+   if(debug): import matplotlib.pyplot as plt
    trigger_flag = 0
    if (delay_type_flag == 1):
       GLITC_delays = read_GLITC_delays(baseline)
@@ -175,14 +176,15 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
             #print square_ABC
             square_sum_ABC[i] = np.sum(square_ABC)
             #print square_sum_ABC[i]
-            #if(debug):
+            """
+            if(debug):
                #print len(t)
                #print len(a_dig_waveform)
                #print len(b_dig_waveform)
                #print len(c_dig_waveform)
-               #print "Temp sum and delay"
-               #print square_sum_ABC[i]
-               #print GLITC_delays[i]
+               print "Temp sum and delay"
+               print square_sum_ABC[i]
+               print GLITC_delays[i]
                #plt.figure(1)
                #plt.plot(t[a_start_pos:a_start_pos+TISC_sample_length],a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],t[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length],t[a_start_pos:a_start_pos+TISC_sample_length],c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
                #plt.figure(2)
@@ -190,7 +192,7 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
                #plt.figure(3)
                #plt.plot(t[a_start_pos:a_start_pos+TISC_sample_length],square_ABC)
                #plt.show()
-            
+            """
       # Add all the 16 sample sums for each delay
       total_sum = np.add(square_sum_ABC,previous_square_sum) 
       
@@ -199,10 +201,14 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       
       # Find the delays for the largest sum
       best_delays = GLITC_delays[np.argmax(total_sum)]
-      if(debug):
-         #print "Best sum and delays"
-         #print max_total_sum
+      if(debug and max_total_sum>300):
+         print "Best sum and delays"
+         print max_total_sum
          print best_delays
+         bplot =np.roll(b_dig_waveform,int(best_delays[1]))
+         cplot = np.roll(c_dig_waveform,int(best_delays[2]))
+         plt.plot(t,a_dig_waveform,t,bplot,t,cplot)
+         plt.show()
       if(average_subtract_flag):
          # Average over sums during the trial period
          if (trial_run_number>0):
@@ -283,9 +289,9 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
    """
       
    if (average_subtract_flag):
-      return trigger_flag, max_total_sum, as_max_total_sum, correlation_mean, total_sum[0], as_total_sum[0],best_delays[3],as_best_delays[3]
+      return trigger_flag, max_total_sum, as_max_total_sum, correlation_mean, total_sum[0], as_total_sum[0],best_delays[3],as_best_delays[3],as_total_sum,total_sum
    else:
-      return trigger_flag, max_total_sum,best_delays[3]
+      return trigger_flag, max_total_sum,best_delays[3],total_sum
 
 
 if __name__ == '__main__':
