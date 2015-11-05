@@ -10,7 +10,7 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_events = 20000             # Number of events to generate per loop
+   num_events = 2            # Number of events to generate per loop
    upsample = 10                     # Upsamping factor
    digitization_factor = 32.0       # Digitization factor for threshold(mV)
    num_bits = 3                     # Number of bits available to digitizer
