@@ -467,13 +467,18 @@ def form_pure_impulse_file(a,b,c,d,e,f,sample_window=80,first_pulse_position=100
 	old_num_samples_between_pulses = sample_frequency/initial_freq
 	
 	new_num_samples_between_pulses = 80
+	"""
 	if(debug==True):
 		print old_num_samples_between_pulses
 		print new_num_samples_between_pulses
 		print len(a)
+	"""
+	
+	low_bin_factor = 0.9
+	high_bin_factor = 1.1
 	
 	# Use find impulse method to find each peak and cut it out
-	first_peak_position = find_impulse_peak(a[:first_pulse_position*2],b[:first_pulse_position*2],c[:first_pulse_position*2],d[:first_pulse_position*2],e[:first_pulse_position*2],f[:first_pulse_position*2])
+	first_peak_position = find_impulse_peak(a[:first_pulse_position*2],b[:first_pulse_position*2],c[:first_pulse_position*2],d[:first_pulse_position*2],e[:first_pulse_position*2],f[:first_pulse_position*2],debug=debug)
 	first_peak_start = first_peak_position-num_samp_before_peak
 	if(first_peak_start<0):
 		first_peak_start=0
@@ -483,16 +488,18 @@ def form_pure_impulse_file(a,b,c,d,e,f,sample_window=80,first_pulse_position=100
 		first_peak_start = first_peak_end-new_num_samples_between_pulses
 	new_a,new_b,new_c =a[first_peak_start:first_peak_end],b[first_peak_start:first_peak_end],c[first_peak_start:first_peak_end]
 	new_d,new_e,new_f = d[first_peak_start:first_peak_end],e[first_peak_start:first_peak_end],f[first_peak_start:first_peak_end]
-	
+	"""
 	if(debug==True):
 		print "First Peak Window Start %d (%d ns)"%(0,0)
 		print "First Peak Window End %d (%d ns)"%((first_pulse_position+100),((first_pulse_position+100)*timestep*10**9))
 		print "First Peak Start %d (%d ns)"%(first_peak_start,first_peak_start*timestep*10**9)
 		print "First Peak End %d (%d ns)"%(first_peak_end,first_peak_end*timestep*10**9)
-		print len(new_a)
-	
-	second_peak_position = find_impulse_peak(a[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],b[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],c[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],d[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],e[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],f[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5])
-	second_peak_start = first_peak_end+second_peak_position-num_samp_before_peak
+		#print len(new_a)
+	"""
+	#second_peak_position = find_impulse_peak(a[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],b[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],c[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],d[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],e[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],f[first_peak_end:first_peak_end+old_num_samples_between_pulses*1.5],debug=debug)
+	#second_peak_position = find_impulse_peak(a[int((first_peak_position+old_num_samples_between_pulses)*low_bin_factor):int((first_peak_position+old_num_samples_between_pulses)*high_bin_factor)],b[int((first_peak_position+old_num_samples_between_pulses)*low_bin_factor):int((first_peak_position+old_num_samples_between_pulses)*high_bin_factor)],c[int((first_peak_position+old_num_samples_between_pulses)*low_bin_factor):int((first_peak_position+old_num_samples_between_pulses)*high_bin_factor)],d[int((first_peak_position+old_num_samples_between_pulses)*low_bin_factor):int((first_peak_position+old_num_samples_between_pulses)*high_bin_factor)],e[int((first_peak_position+old_num_samples_between_pulses)*low_bin_factor):int((first_peak_position+old_num_samples_between_pulses)*high_bin_factor)],f[int((first_peak_position+old_num_samples_between_pulses)*low_bin_factor):int((first_peak_position+old_num_samples_between_pulses)*high_bin_factor)],debug=debug)
+	#second_peak_start = first_peak_end+second_peak_position-num_samp_before_peak
+	second_peak_start = first_peak_start+old_num_samples_between_pulses
 	if(second_peak_start<0):
 		second_peak_start=0
 	second_peak_end = second_peak_start+new_num_samples_between_pulses
@@ -504,14 +511,17 @@ def form_pure_impulse_file(a,b,c,d,e,f,sample_window=80,first_pulse_position=100
 	new_d,new_e,new_f = np.concatenate((new_d,d[second_peak_start:second_peak_end])),np.concatenate((new_e,e[second_peak_start:second_peak_end])),np.concatenate((new_f,f[second_peak_start:second_peak_end]))
 	
 	if(debug==True):
-		print "Second Peak Window Start %d (%d ns)"%(first_peak_end,first_peak_end*timestep*10**9)
-		print "Second Peak Window End %d (%d ns)"%((first_peak_end+old_num_samples_between_pulses*1.5),(first_peak_end+old_num_samples_between_pulses*1.5)*timestep*10**9)
-		print "Second Peak Start %d (%d ns)"%(second_peak_start,second_peak_start*timestep*10**9)
-		print "Second Peak End %d (%d ns)"%(second_peak_end,second_peak_end*timestep*10**9)
-		print len(new_a)
+		#print "Second Peak Window Start %d (%d ns)"%(first_peak_end,first_peak_end*timestep*10**9)
+		#print "Second Peak Window End %d (%d ns)"%((first_peak_end+old_num_samples_between_pulses*1.5),(first_peak_end+old_num_samples_between_pulses*1.5)*timestep*10**9)
+		#print "Second Peak Start %d (%d ns)"%(second_peak_start,second_peak_start*timestep*10**9)
+		#print "Second Peak End %d (%d ns)"%(second_peak_end,second_peak_end*timestep*10**9)
+		print "AB Period: %d (%d ns)"%(second_peak_start-first_peak_start,(second_peak_start-first_peak_start)*timestep*10**9)
+		#print len(new_a)
 	
-	third_peak_position = find_impulse_peak(a[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],b[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],c[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],d[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],e[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],f[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5])
-	third_peak_start = second_peak_end+third_peak_position-num_samp_before_peak
+	#third_peak_position = find_impulse_peak(a[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],b[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],c[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],d[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],e[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],f[second_peak_end:second_peak_end+old_num_samples_between_pulses*1.5],debug=debug)
+	#third_peak_position = find_impulse_peak(a[int((2*old_num_samples_between_pulses+first_peak_position)*low_bin_factor):int((2*old_num_samples_between_pulses+first_peak_position)*high_bin_factor)],b[int((2*old_num_samples_between_pulses+first_peak_position)*low_bin_factor):int((2*old_num_samples_between_pulses+first_peak_position)*high_bin_factor)],c[int((2*old_num_samples_between_pulses+first_peak_position)*low_bin_factor):int((2*old_num_samples_between_pulses+first_peak_position)*high_bin_factor)],d[int((2*old_num_samples_between_pulses+first_peak_position)*low_bin_factor):int((2*old_num_samples_between_pulses+first_peak_position)*high_bin_factor)],e[int((2*old_num_samples_between_pulses+first_peak_position)*low_bin_factor):int((2*old_num_samples_between_pulses+first_peak_position)*high_bin_factor)],f[int((2*old_num_samples_between_pulses+first_peak_position)*low_bin_factor):int((2*old_num_samples_between_pulses+first_peak_position)*high_bin_factor)],debug=debug)
+	#third_peak_start = second_peak_end+third_peak_position-num_samp_before_peak
+	third_peak_start = second_peak_start+old_num_samples_between_pulses
 	if(third_peak_start<0):
 		third_peak_start=0
 	third_peak_end = third_peak_start+new_num_samples_between_pulses
@@ -523,22 +533,31 @@ def form_pure_impulse_file(a,b,c,d,e,f,sample_window=80,first_pulse_position=100
 	new_d,new_e,new_f = np.concatenate((new_d,d[third_peak_start:third_peak_end])),np.concatenate((new_e,e[third_peak_start:third_peak_end])),np.concatenate((new_f,f[third_peak_start:third_peak_end]))
 	
 	if(debug==True):
-		print "Third Peak Window Start %d (%d ns)"%(second_peak_end,second_peak_end*timestep*10**9)
-		print "Third Peak Window End %d (%d ns)"%((second_peak_end+old_num_samples_between_pulses*1.5),(second_peak_end+old_num_samples_between_pulses*1.5)*timestep*10**9)
-		print "Third Peak Start %d (%d ns)"%(third_peak_start,third_peak_start*timestep*10**9)
-		print "Third Peak End %d (%d ns)"%(third_peak_end,third_peak_end*timestep*10**9)
-		print len(new_a)
+		#print "Third Peak Window Start %d (%d ns)"%(second_peak_end,second_peak_end*timestep*10**9)
+		#print "Third Peak Window End %d (%d ns)"%((second_peak_end+old_num_samples_between_pulses*1.5),(second_peak_end+old_num_samples_between_pulses*1.5)*timestep*10**9)
+		#print "Third Peak Start %d (%d ns)"%(third_peak_start,third_peak_start*timestep*10**9)
+		#print "Third Peak End %d (%d ns)"%(third_peak_end,third_peak_end*timestep*10**9)
+		print "BC Period: %d (%d ns)"%(third_peak_start-second_peak_start,(third_peak_start-second_peak_start)*timestep*10**9)
+		#print len(new_a)
 	
 	new_t = np.linspace(0,len(new_a)*timestep,len(new_a))
 	
 	return new_a, new_b,new_c,new_d,new_e,new_f, new_t
 	
-def find_impulse_peak(a,b,c,d,e,f):
+def find_impulse_peak(a,b,c,d,e,f,debug=False):
    abc_signal = np.add(a,np.add(b,c))
    def_signal = np.add(d,np.add(e,f))
    abcdef_signal = np.add(abc_signal,def_signal)
    #abs_signal = np.square(signal)
    peak_element = np.argmin(abcdef_signal)
+   if(debug):
+	   #print "A peak: %.2f"%a[peak_element]
+	   #print "B peak: %.2f"%b[peak_element]
+	   #print "C peak: %.2f"%c[peak_element]
+	   #print "D peak: %.2f"%d[peak_element]
+	   #print "E peak: %.2f"%e[peak_element]
+	   #print "F peak: %.2f"%f[peak_element]
+	   print "Sum peak: %.2f"%abcdef_signal[peak_element]
   
    
    return peak_element
@@ -620,11 +639,12 @@ def build_data_file(input_file_atten,num_files,impulse_file=True):
 			a,b,c,d,e,f,t = form_pure_impulse_file(a,b,c,d,e,f)
 			#print len(au)
 			#print len(du)
+			
 		
 		num_samples = len(a)
 		time = np.linspace(i*num_samples*timestep,(i+1)*num_samples*timestep,num_samples)
 		
-
+		
 		# Convert to one matrix
 		write_matrix = np.zeros((13,num_samples))
 		#write_matrix = [0]*13
@@ -647,10 +667,10 @@ def build_data_file(input_file_atten,num_files,impulse_file=True):
 		# Write to one large file
 		#write_to_file('testbench_analysis/data','test_concat_data.dat',write_matrix)
 		if(impulse_file==True):
-			write_to_file('testbench_analysis/data','Atten_%1.2f_imp.dat'%(input_file_atten),write_matrix)
+			write_to_file('testbench_analysis/data','Atten_%1.2f_imp_2.dat'%(input_file_atten),write_matrix)
 		else:
 			write_to_file('testbench_analysis/data','Atten_%1.2f_therm.dat'%(input_file_atten),write_matrix)
-	
+		
 	return None
 	
    

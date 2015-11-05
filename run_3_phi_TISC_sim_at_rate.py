@@ -17,7 +17,7 @@ if __name__ == '__main__':
    num_events = 10000   # Number of events to generate per loop
    boresight = 0
    baseline = 0
-   angle_range = 2.5
+   angle_range = 100
    upsample = 10                     # Upsamping factor
    digitization_factor = 32.0       # Digitization factor for threshold(mV)
    num_bits = 3                     # Number of bits available to digitizer
@@ -39,8 +39,8 @@ if __name__ == '__main__':
    #print threshold_to_energy
    # These delays should be negative, since A is the top antenna
    # and we expect an upgoing signal
-   b_input_delay = -15                # Ch B signal offset
-   c_input_delay = -17              # Ch C signal offset
+   b_input_delay = -2                # Ch B signal offset
+   c_input_delay = 0            # Ch C signal offset
 
    low_SNR = 0.0                   # Lowest SNR
    high_SNR = 5.0                 # Highest SNR

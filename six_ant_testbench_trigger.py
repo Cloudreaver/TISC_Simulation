@@ -21,8 +21,8 @@ if __name__ == '__main__':
    # Parameters
    num_events = 10000
    samples_to_read = int(num_events*80)
-   boresight = 1
-   baseline = 1
+   boresight = 0
+   baseline = 0
    angle_range = 100
    TISC_sample_length = 16
    digitization_factor = 32.0       # Digitization factor for threshold(mV)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
       
    impulse_amp_max = 658.42
    #array_of_impulse_atten = np.linspace(0.0,31.5,64)
-   array_of_impulse_atten = np.array([100,14,16,18,20,22,24,30,34,36,38,40,42,44,46,50])
+   array_of_impulse_atten = np.array([100,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,50])
    if(debug==True): print array_of_impulse_atten
    array_of_SNR_values = np.zeros(len(array_of_impulse_atten))
    
@@ -218,30 +218,39 @@ if __name__ == '__main__':
       #ghi_SNR_index,ghi_SNR_value = ttb.find_nearest(array_of_SNR_values,SNR[SNR_counter]*ghi_impulse_amp)
       #ghi_atten_value = array_of_impulse_atten[ghi_SNR_index]
       #if(debug==True): print "GHI SNR: %1.2f"%ghi_SNR_value
-      time,a_uncor,b_uncor,c_uncor,d_uncor,e_uncor,f_uncor,a,b,c,d,e,f = ttb.read_data_from_data_file(abc_atten_value,samples_to_read,0)
-      #time,d_uncor,e_uncor,f_uncor,d1,d2,d3,d,e,f,d4,d5,d6 = ttb.read_data_from_data_file(def_atten_value,samples_to_read,1)
-      #time,g_uncor,h_uncor,i_uncor,d1,d2,d3,g,h,i,d4,d5,d6 = ttb.read_data_from_data_file(ghi_atten_value,samples_to_read,2)
-      """
-      elif(boresight==1):
-         # Start working on data with impulses
-         center_SNR_index,center_SNR_value = ttb.find_nearest(array_of_SNR_values,SNR[SNR_counter])
-         center_atten_value = array_of_impulse_atten[center_SNR_index]
-         if(debug==True): print "Center SNR: %1.2f"%center_SNR_value
-         side_SNR_index,side_SNR_value = ttb.find_nearest(array_of_SNR_values,center_SNR_value*0.9235)
-         side_atten_value = array_of_impulse_atten[side_SNR_index]
-         if(debug==True): print "Side SNR: %1.2f"%side_SNR_value
-         far_side_SNR_index,far_side_SNR_value = ttb.find_nearest(array_of_SNR_values,center_SNR_value*0.6500)
-         far_side_atten_value = array_of_impulse_atten[far_side_SNR_index]
-         if(debug==True): print "Far Side SNR: %1.2f"%far_side_SNR_value
-         # Read in impulsive data
-         time,a_uncor,b_uncor,c_uncor,d_uncor,e_uncor,f_uncor,a,b,c,d,e,f = ttb.read_data_from_data_file(side_atten_value,samples_to_read)
-         time,d_uncor,e_uncor,f_uncor,g_uncor,h_uncor,i_uncor,d,e,f,g,h,i = ttb.read_data_from_data_file(side_atten_value,samples_to_read,1)
-         time,g_uncor,h_uncor,i_uncor,d1,d2,d3,g,h,i,d4,d5,d6 = ttb.read_data_from_data_file(far_side_atten_value,samples_to_read,2)
-      """
-      if(debug): print len(time),len(a),len(b),len(c),len(d),len(e),len(f),len(g),len(h),len(i)
+      if(SNR[SNR_counter]!=0):
+         time,a_uncor,b_uncor,c_uncor,d_uncor,e_uncor,f_uncor,a,b,c,d,e,f = ttb.read_data_from_data_file(abc_atten_value,samples_to_read,0)
+         #time,d_uncor,e_uncor,f_uncor,d1,d2,d3,d,e,f,d4,d5,d6 = ttb.read_data_from_data_file(def_atten_value,samples_to_read,1)
+         #time,g_uncor,h_uncor,i_uncor,d1,d2,d3,g,h,i,d4,d5,d6 = ttb.read_data_from_data_file(ghi_atten_value,samples_to_read,2)
+         """
+         elif(boresight==1):
+            # Start working on data with impulses
+            center_SNR_index,center_SNR_value = ttb.find_nearest(array_of_SNR_values,SNR[SNR_counter])
+            center_atten_value = array_of_impulse_atten[center_SNR_index]
+            if(debug==True): print "Center SNR: %1.2f"%center_SNR_value
+            side_SNR_index,side_SNR_value = ttb.find_nearest(array_of_SNR_values,center_SNR_value*0.9235)
+            side_atten_value = array_of_impulse_atten[side_SNR_index]
+            if(debug==True): print "Side SNR: %1.2f"%side_SNR_value
+            far_side_SNR_index,far_side_SNR_value = ttb.find_nearest(array_of_SNR_values,center_SNR_value*0.6500)
+            far_side_atten_value = array_of_impulse_atten[far_side_SNR_index]
+            if(debug==True): print "Far Side SNR: %1.2f"%far_side_SNR_value
+            # Read in impulsive data
+            time,a_uncor,b_uncor,c_uncor,d_uncor,e_uncor,f_uncor,a,b,c,d,e,f = ttb.read_data_from_data_file(side_atten_value,samples_to_read)
+            time,d_uncor,e_uncor,f_uncor,g_uncor,h_uncor,i_uncor,d,e,f,g,h,i = ttb.read_data_from_data_file(side_atten_value,samples_to_read,1)
+            time,g_uncor,h_uncor,i_uncor,d1,d2,d3,g,h,i,d4,d5,d6 = ttb.read_data_from_data_file(far_side_atten_value,samples_to_read,2)
+         """
+         if(debug): print len(time),len(a),len(b),len(c),len(d),len(e),len(f),len(g),len(h),len(i)
+         # Now shift the middle and lower rings to the correct delays
+         b,c = ttb.delay_antennas(b,c,middle_delay,lower_delay)
+         e,f = ttb.delay_antennas(e,f,middle_delay,lower_delay)
+         #h,i = ttb.delay_antennas(h,i,middle_delay,lower_delay)
+         
+         b_uncor,c_uncor = ttb.delay_antennas(b_uncor,c_uncor,middle_delay,lower_delay)
+         e_uncor,f_uncor = ttb.delay_antennas(e_uncor,f_uncor,middle_delay,lower_delay)
+         #h_uncor,i_uncor = ttb.delay_antennas(h_uncor,i_uncor,middle_delay,lower_delay)
       
       if(SNR[SNR_counter]==0):
-         thermal_noise_factor = 10
+         thermal_noise_factor = 3
       else:
          thermal_noise_factor = 1
          
@@ -252,14 +261,7 @@ if __name__ == '__main__':
       #time,g_uncor_therm,h_uncor_therm,i_uncor_therm,d1,d2,d3,g_therm,h_therm,i_therm,d4,d5,d6 = ttb.read_data_from_data_file(100.00,samples_to_read*thermal_noise_factor,3)
       #print len(time)
 
-      # Now shift the middle and lower rings to the correct delays
-      b,c = ttb.delay_antennas(b,c,middle_delay,lower_delay)
-      e,f = ttb.delay_antennas(e,f,middle_delay,lower_delay)
-      #h,i = ttb.delay_antennas(h,i,middle_delay,lower_delay)
       
-      b_uncor,c_uncor = ttb.delay_antennas(b_uncor,c_uncor,middle_delay,lower_delay)
-      e_uncor,f_uncor = ttb.delay_antennas(e_uncor,f_uncor,middle_delay,lower_delay)
-      #h_uncor,i_uncor = ttb.delay_antennas(h_uncor,i_uncor,middle_delay,lower_delay)
       
       num_samples = len(time)
 

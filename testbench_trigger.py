@@ -1,7 +1,7 @@
 #!/usr/bin/env python
   
 if __name__ == '__main__':
-   debug = True
+   debug = False
    
    import time
    import os
@@ -19,18 +19,18 @@ if __name__ == '__main__':
    
    #############################################################
    # Parameters
-   num_events = 100
+   num_events = 10000
    samples_to_read = int(num_events*80)
    boresight = 0
-   baseline = 0
+   baseline = 1
    angle_range = 100
    TISC_sample_length = 16
    digitization_factor = 32.0       # Digitization factor for threshold(mV)
    noise_sigma = 28.0
    num_bits = 3                     # Number of bits available to digitizer
-   simulation_rate = 162500000.0          # Simulation Rate (MHz)
-   event_rate = 81250000.0                 # Rate impulsive events were generated (MHz)
-   num_samples_per_window = 80                 # Length of Signal Window
+   simulation_rate = 162500000.0    # Simulation Rate (MHz)
+   event_rate = 1000000.0          # Rate impulsive events were generated (MHz)
+   num_samples_per_window = 80      # Length of Signal Window
    draw_flag = False                # 1=draw event graphs, 0=don't                        
    SNR_draw_flag = True             # 1=draw SNR graphs, 0=don't
    delay_type_flag = 1              # 1=use GLITC delays, 0=all possible delays
@@ -41,7 +41,7 @@ if __name__ == '__main__':
    #trial_size = 256*32
    
    middle_delay = -15                # Ch B signal offset
-   lower_delay = -17                # Ch C signal offset
+   lower_delay = -17              # Ch C signal offset
 
    low_threshold = 0             # Lowest Threshold
    high_threshold = 4095         # Highest Threshold
@@ -50,7 +50,7 @@ if __name__ == '__main__':
       
    impulse_amp_max = 658.42
    #array_of_impulse_atten = np.linspace(0.0,31.5,64)
-   array_of_impulse_atten = np.array([100,14,16,18,20,22,26,28,30,32,34,36,38,40,42,44,46,50])
+   array_of_impulse_atten = np.array([100,14,16,18,20,22,24,26,28,30,32,34,36,38,40,44,50])
    if(debug==True): print array_of_impulse_atten
    array_of_SNR_values = np.zeros(len(array_of_impulse_atten))
    
@@ -259,7 +259,7 @@ if __name__ == '__main__':
       
       
       if(SNR[SNR_counter]==0):
-         thermal_noise_factor = 10
+         thermal_noise_factor = 3
       else:
          thermal_noise_factor = 1
          
@@ -291,7 +291,7 @@ if __name__ == '__main__':
       
 
       # Start loop over events
-      num_runs  = int(num_samples/num_samples_per_window)
+      num_runs  = int(num_samples/num_samples_per_window)*(simulation_rate/event_rate)
       #num_events = int(num_runs/float((simulation_rate/event_rate)))
       #print "Num runs %d"%num_runs
       if(debug==True): print "Number of runs %d"%num_runs
@@ -305,7 +305,7 @@ if __name__ == '__main__':
          if(end>=num_samples):
             break
          
-         if ((timestep % int((simulation_rate/event_rate)) == 0 or SNR[SNR_counter]==0)):
+         if ((timestep % int((simulation_rate/event_rate)) != 0 or SNR[SNR_counter]==0)):
             #print "thermal event"
             #print len(a_therm[start:end])
             #print len(b_therm[start:end])
@@ -331,15 +331,18 @@ if __name__ == '__main__':
             d1,ghi_max_sum_uncor,as_ghi_max_sum_uncor,ghi_correlation_mean_uncor,d4,d5,as_ghi_angle_uncor,ghi_angle_uncor,d8,d9 = sum_correlate(num_samples_per_window,g_uncor_therm[start:end],h_uncor_therm[start:end],i_uncor_therm[start:end],threshold,ghi_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=ghi_correlation_mean_uncor)
             #if(debug): print abc_max_sum+def_max_sum+ghi_max_sum
          else:
-            #print "Starting events runs"
+            if(debug): print "Starting events runs %d"%timestep
             #plt.plot(time[start:end],a[start:end],time[start:end],b[start:end],time[start:end],c[start:end])
             #plt.plot(time[start:end],d[start:end],time[start:end],e[start:end],time[start:end],f[start:end])
             #plt.plot(time[start:end],g[start:end],time[start:end],h[start:end],time[start:end],i[start:end])
             #plt.title("Outside correlator")
             #plt.show()
-            d1,abc_max_sum,as_abc_max_sum,abc_correlation_mean,d4,d5,as_abc_angle,abc_angle,d8,d9 = sum_correlate(num_samples_per_window,a[start:end],b[start:end],c[start:end],threshold,abc_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=abc_correlation_mean)
-            d1,def_max_sum,as_def_max_sum,def_correlation_mean,d4,d5,as_def_angle,def_angle,d8,d9 = sum_correlate(num_samples_per_window,d[start:end],e[start:end],f[start:end],threshold,def_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=def_correlation_mean)
-            d1,ghi_max_sum,as_ghi_max_sum,ghi_correlation_mean,d4,d5,as_ghi_angle,ghi_angle,d8,d9 = sum_correlate(num_samples_per_window,g[start:end],h[start:end],i[start:end],threshold,ghi_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=ghi_correlation_mean)
+            if(debug): print "ABC"
+            d1,abc_max_sum,as_abc_max_sum,abc_correlation_mean,d4,d5,as_abc_angle,abc_angle,d8,d9 = sum_correlate(num_samples_per_window,a[start:end],b[start:end],c[start:end],threshold,abc_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=abc_correlation_mean,debug=debug)
+            if(debug): print "DEF"
+            d1,def_max_sum,as_def_max_sum,def_correlation_mean,d4,d5,as_def_angle,def_angle,d8,d9 = sum_correlate(num_samples_per_window,d[start:end],e[start:end],f[start:end],threshold,def_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=def_correlation_mean,debug=debug)
+            if(debug): print "GHI"
+            d1,ghi_max_sum,as_ghi_max_sum,ghi_correlation_mean,d4,d5,as_ghi_angle,ghi_angle,d8,d9 = sum_correlate(num_samples_per_window,g[start:end],h[start:end],i[start:end],threshold,ghi_baseline,TISC_sample_length=16,delay_type_flag=1,average_subtract_flag=1,correlation_mean=ghi_correlation_mean,debug=debug)
             #print as_abc_max_sum
             #print end-start
             #print len(a[start:end])
