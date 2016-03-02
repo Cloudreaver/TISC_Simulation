@@ -53,11 +53,11 @@ def calculate_angles():
 	ac_bot_delay = np.zeros(100)
 	counter = 0
 	
-	top_outfile = open('GLITC_long_baseline_delays.dat','w')
-	top_outfile.write('Elevation_angle,\tA_long_baseline_delay,\tA-B_delay,\tA-C_delay\n')
+	#top_outfile = open('GLITC_long_baseline_delays.dat','w')
+	#top_outfile.write('Elevation_angle,\tA_long_baseline_delay,\tA-B_delay,\tA-C_delay\n')
 	
-	bot_outfile = open('GLITC_short_baseline_delays.dat','w')
-	bot_outfile.write('Elevation_angle,\tA_short_baseline_delay,\tA-B_delay,\tA-C_delay\n')
+	#bot_outfile = open('GLITC_short_baseline_delays.dat','w')
+	#bot_outfile.write('Elevation_angle,\tA_short_baseline_delay,\tA-B_delay,\tA-C_delay\n')
 	
 	lowest_angle = -10
 	highest_angle = 50
@@ -85,7 +85,9 @@ def calculate_angles():
 		#print "Save Delays"
 		if (unique_delay):
 			#print 'writing top delay'
-			top_outfile.write(str((-1)*angle[i])+',\t0,\t'+str(ab_top_delay[counter])+',\t'+str(ac_top_delay[counter])+'\n')
+			#top_outfile.write(str((-1)*angle[i])+',\t0,\t'+str(ab_top_delay[counter])+',\t'+str(ac_top_delay[counter])+'\n')
+			print "\nFor angle: "+str(-1*angle[i])+ " degrees,  the  A_top_B_delay  should  be "+str(ab_top_delay[counter])
+			print "For angle: "+str(-1*angle[i])+ " degrees, the A_top_C_delay should be "+str(ac_top_delay[counter])
 			counter +=1 
 		#print counter
 	
@@ -109,13 +111,15 @@ def calculate_angles():
 		#print "Save Delays"
 		if (unique_delay):
 			#print 'writing bot delay'
-			bot_outfile.write(str((-1)*angle[i])+',\t0,\t'+str(ab_bot_delay[counter])+',\t'+str(ac_bot_delay[counter])+'\n')
+			#bot_outfile.write(str((-1)*angle[i])+',\t0,\t'+str(ab_bot_delay[counter])+',\t'+str(ac_bot_delay[counter])+'\n')
+			print "\nFor angle: "+str(-1*angle[i])+ " degrees,  the  A_bot_B_delay  should  be "+str(ab_bot_delay[counter])
+			print "For angle: "+str(-1*angle[i])+ " degrees, the A_bot_C_delay should be "+str(ac_bot_delay[counter])
 			counter +=1 
 		#print counter
 		
 		
-	top_outfile.close()
-	bot_outfile.close()
+	#top_outfile.close()
+	#bot_outfile.close()
 	return 0
 	
 if __name__ == '__main__':

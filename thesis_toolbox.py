@@ -70,9 +70,9 @@ def plot_impulse_response():
 	peak_loc_1 = np.argmax(a1)
 	#print np.amin(a1)
 	#print np.amax(a1)
-	plt.figure(1,figsize=(16,9))
+	plt.figure(1,figsize=(8,4))
 	#plt.plot(t[plot_start:790+plot_start],a1[plot_start:790+plot_start],label="ANITA Impulse Response")
-	plt.plot(t1*10**9,a1,label="ANITA Impulse Response")
+	plt.plot(t1*10**9,a1,label="ANITA Impulse Response",color='r')
 	#plt.ylabel("Voltage (Normalized)")
 	#plt.xlabel("Time [ns]")
 	#plt.xlim(0,40)
@@ -113,15 +113,19 @@ def plot_impulse_response():
 	a2 = (-1)*np.array(a2)*(1.0/(np.amax(a2)-np.amin(a2)))
 	
 	#plt.plot(t[plot_start:plot_samples+plot_start],np.array(a[plot_start:plot_samples+plot_start]),label="Testbench Impulse Response")
-	plt.plot(t2*10**9,a2,label="Testbench Impulse Response")
+	plt.plot(t2*10**9,a2,label="Testbench Impulse Response",color='b')
 	plt.legend()
 	plt.title("ANITA Impulse Response vs Testbench Impulse Response")
 	plt.ylabel("Voltage (Normalized)")
 	plt.xlabel("Time [ns]")
 	plt.xlim(0,60)
-	plt.legend()
+	plt.legend(prop={'size':10})
 	plt.grid(True)
 	#plt.show()
+	
+	
+	
+	
 	anita_power = []
 	anita_max_power = []
 	num_anita_samples_in_window = int(12.4/(delta_t1*10**9))*2/2
@@ -168,34 +172,42 @@ def plot_impulse_response():
 	for i in range(0,len(a2)-num_tb_sub_samples_in_window):
 		tb_max_power.append(np.mean(tb_power[i:i+num_tb_sub_samples_in_window]))
 		
-	plt.figure(2,figsize=(16,9))
+	plt.figure(2,figsize=(8,4))
 	print len(t1),len(t2)
 	print len(anita_power),len(tb_power)
 	
-	plt.plot(t1[:len(a1)-num_anita_samples_in_window]*10**9,anita_power,label='ANITA Impulse')
-	plt.plot(t2[:len(a2)-num_tb_samples_in_window]*10**9,tb_power,label='Testbench Impulse')
+	plt.plot(t1[:len(a1)-num_anita_samples_in_window]*10**9+6.2,anita_power,label='ANITA Impulse',color='r')
+	plt.plot(t2[:len(a2)-num_tb_samples_in_window]*10**9+6.2,tb_power,label='Testbench Impulse',color='b')
 	plt.title("32 Sample (12.4ns) Moving Average Power")
 	plt.ylabel("Average Power")
 	plt.xlabel("Time [ns]")
 	plt.xlim(0,60)
-	plt.legend()
+	plt.legend(prop={'size':10})
 	print np.amax(anita_power)
 	print np.amax(tb_power)
 	print np.sqrt(np.amax(anita_power)/np.amax(tb_power))
 	
-	plt.figure(3,figsize=(16,8))
+	plt.figure(3,figsize=(8,4))
 	print len(t1),len(t2)
 	print len(anita_power),len(tb_power)
 	
-	plt.plot(t1[:len(a1)-num_anita_sub_samples_in_window]*10**9,anita_max_power,label='ANITA Impulse')
-	plt.plot(t2[:len(a2)-num_tb_sub_samples_in_window]*10**9,tb_max_power,label='Testbench Impulse')
-	plt.title("16 Sample (6.2ns) Moving Average of 32 Sample (12.4ns) Moving Average Power")
+	plt.plot(t1[:len(a1)-num_anita_sub_samples_in_window]*10**9+6.2,anita_max_power,label='ANITA Impulse',color='r')
+	plt.plot(t2[:len(a2)-num_tb_sub_samples_in_window]*10**9+6.2,tb_max_power,label='Testbench Impulse',color='b')
+	plt.title("32 Sample (12.4ns) Moving Average Power")
 	plt.ylabel("Average Power")
 	plt.xlabel("Time [ns]")
 	plt.xlim(0,60)
+	plt.legend(prop={'size':10})
+	
+	plt.figure(4,figsize=(8,4))
+	plt.plot(t2*10**9,a2,label="Testbench Impulse")
 	plt.legend()
-	
-	
+	plt.title("Testbench Impulse Response")
+	plt.ylabel("Voltage (Normalized)")
+	plt.xlabel("Time [ns]")
+	plt.xlim(0,60)
+	plt.legend(prop={'size':10})
+	plt.grid(True)
 	"""
 	power_temp = 0
 	for i in range(len(a2)):
@@ -788,5 +800,48 @@ def res(p, y, x):
 	y_fit = norm(x, m1, sd1) + norm(x, m2, sd2)
 	err = y - y_fit
 	return err
+	
+def make_presentation_plot():
+	import matplotlib.pyplot as plt
+	
+	
+	t,au,bu,cu,du,eu,fu,a,b,c,d,e,f = read_data_from_trial_file(14,0)
+	print t[1]
+	timestep = 1.0#(1.0/2600000000.0)*10**9
+	t = np.array(t,dtype="float")*timestep
+	plot_start=5790
+	plot_length = 5870
+	#plot_start=0
+	#plot_length = 160
+	plt.figure(1,figsize=(8,4))
+	plt.plot(t[plot_start:plot_length],au[plot_start:plot_length],color='k',label='Ch A')
+	plt.plot(t[plot_start:plot_length],bu[plot_start:plot_length],color='r',label='Ch B')
+	plt.plot(t[plot_start:plot_length],cu[plot_start:plot_length],color='b',label='Ch C')
+	plt.title("GLITC 0, RITC 0 Impulse (Uncorrected)")
+	#plt.title("GLITC 0, RITC 0 Thermal Noise (Uncorrected)")
+	plt.ylabel("RITC Output [DAC]")
+	plt.xlabel("Time [ns]")
+	plt.legend(prop={'size':10})
+	
+	
+	plt.figure(2,figsize=(8,4))
+	plt.plot(t[plot_start:plot_length],a[plot_start:plot_length],color='k',label='Ch A')
+	plt.plot(t[plot_start:plot_length],b[plot_start:plot_length],color='r',label='Ch B')
+	plt.plot(t[plot_start:plot_length],c[plot_start:plot_length],color='b',label='Ch C')
+	plt.title("GLITC 0, RITC 0 Impulse")
+	#plt.title("GLITC 0, RITC 0 Thermal Noise")
+	plt.ylabel("RITC Output [DAC]")
+	plt.xlabel("Time [ns]")
+	plt.legend(prop={'size':10})
+	
+	plt.figure(3,figsize=(8,4))
+	plt.plot(t[plot_start:plot_length],a[plot_start:plot_length]+b[plot_start:plot_length]+c[plot_start:plot_length])
+
+	plt.title("GLITC 0, RITC 0 Impulse")
+	plt.ylabel("RITC Output [DAC]")
+	plt.xlabel("Time [ns]")
+	
+	plt.show()
+	return None
 	
 	

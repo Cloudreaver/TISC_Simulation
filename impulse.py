@@ -17,7 +17,7 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
     with open("/home/hupe.2/thesis_code/anita_II_impulse_response.dat",'rb') as csvfile:
 		reader = csv.reader(csvfile,delimiter=' ', quotechar='|')
 		for row in reader:
-			time.append(float(row[0]))
+			time.append(float(row[0])*10**9)
 			sample_signal_temp.append(float(row[1]))
 
     #print np.argmax(np.abs(sample_signal_temp))
@@ -41,11 +41,11 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
     #time = np.linspace(0.0,(num_samples/freq_response)*(10**9), num_samples)
     upsample_time = np.linspace(0.0,(num_samples/freq_response)*(10**9), num_upsamples)
 
-    b, a = butter_bandpass(low_corner_freq, high_corner_freq, order=order,fs=2600000000.0)
+    b, a = butter_bandpass(low_corner_freq, high_corner_freq, order=8,fs=2600000000.0)
     w, h = freqz(b, a, worN=num_samples)
     
     # Transform bandpass filter into time domain to get impulse signal
-    old_upsample_signal_temp = ifft(h,num_upsamples).real
+    #old_upsample_signal_temp = ifft(h,num_upsamples).real
         
     upsample_signal_temp = resample(sample_signal_temp,num_upsamples)    
     
@@ -53,7 +53,7 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
     random_delay = int(np.random.uniform()*16)+37
 
     upsample_signal = np.roll(upsample_signal_temp,random_delay*upsample)
-    old_upsample_signal = np.roll(old_upsample_signal_temp,random_delay*upsample)
+    #old_upsample_signal = np.roll(old_upsample_signal_temp,random_delay*upsample)
     #upsample_signal[random_delay*upsample:num_upsamples] = upsample_signal_temp[0:num_upsamples-random_delay*upsample]
     
     sample_period = upsample_time[1]-upsample_time[0]
@@ -65,35 +65,37 @@ def impulse_gen(num_samples,delay,upsample=10,freq_response=2600000000.0,low_cor
     # Plot the frequency response of the antenna
     
     if(draw_flag):
-        plt.figure(1,figsize=(16,8))
+        plt.figure(1,figsize=(8,4))
         plt.clf()
         plt.semilogy(((freq_response * 0.5 / np.pi) * w)/(10**9), abs(h), label="order = %d" % order)
         plt.axis([0,1.4,0.01,10])
         plt.xlabel('Frequency (GHz)')
         plt.ylabel('Gain')
-        plt.title('Simulated Impulse Reponse')
+        plt.title('Simulated Bandpass Filter')
         plt.grid(True)
     
     if (draw_flag==1):
-        plt.figure(2,figsize=(16,8))
+        plt.figure(2,figsize=(8,4))
         plt.plot(upsample_time,1000.0*upsample_signal[0:num_upsamples])
+        plt.axis([0,35,-1500,1500])
         plt.xlabel("Time [ns]")
         plt.ylabel("Voltage [mV]")
-        plt.title("Upsampled Impulse Simulation")
+        plt.title("26 GSa/sec Impulse Simulation")
         
-    if (draw_flag==1):
-        plt.figure(3,figsize=(16,8))
-        plt.plot(upsample_time,1000.0*old_upsample_signal_temp[0:num_upsamples])
-        plt.xlabel("Time [ns]")
-        plt.ylabel("Voltage [mV]")
-        plt.title("Upsampled Impulse Simulation")
+    #if (draw_flag==1):
+        #plt.figure(3,figsize=(8,4))
+        #plt.plot(upsample_time,1000.0*old_upsample_signal_temp[0:num_upsamples])
+        #plt.xlabel("Time [ns]")
+        #plt.ylabel("Voltage [mV]")
+        #plt.title("Upsampled Impulse Simulation")
     
     if (draw_flag==1):
-        plt.figure(4,figsize=(16,8))
+        plt.figure(4,figsize=(8,4))
         plt.plot(time[0:num_samples],1000.0*signal[0:num_samples])
+        plt.axis([0,35,-1500,1500])
         plt.xlabel("Time [ns]")
         plt.ylabel("Voltage [mV]")
-        plt.title("Impulse Simulation")
+        plt.title("2.6 GSa/sec Impulse Simulation")
         plt.show()
 
     return signal
@@ -121,6 +123,6 @@ if __name__ == '__main__':
     plt.clf()
     plt.plot(time,impulse_sample[0:sample_length])
     plt.xlabel("Time [ns]")
-    plt.ylabel("Amplitude [unitless]")
+    plt.ylabel("Voltage [mV]")
     plt.title("Impulse Simulation")
     plt.show()
