@@ -107,9 +107,9 @@ if __name__ == '__main__':
     
     sample_frequency = 2600000000.0
     sample_length = 80
-    impulse_position = 10
+    impulse_position = 0
     upsample = 10
-    draw_flag = 1
+    draw_flag = 0
     
     upsample_length = upsample*sample_length
     
@@ -118,11 +118,12 @@ if __name__ == '__main__':
     
     time = np.linspace(0.0,((sample_length*(10**9))/sample_frequency), sample_length)
     impulse_sample = impulse_gen(sample_length,impulse_position,upsample,sample_frequency,draw_flag=draw_flag)
-    
+    #print impulse_sample
+    print np.argmax(impulse_sample)
     plt.figure(1)
     plt.clf()
     plt.plot(time,impulse_sample[0:sample_length])
     plt.xlabel("Time [ns]")
     plt.ylabel("Voltage [mV]")
     plt.title("Impulse Simulation")
-    plt.show()
+    #plt.show()

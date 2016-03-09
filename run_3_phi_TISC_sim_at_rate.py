@@ -33,22 +33,25 @@ if __name__ == '__main__':
    carrier_frequency = 260000000.0    # Hz
    modulation_frequency = 1000.0      # Hz
    cw_amplitude = 2.0*noise_sigma #Peak amplitude in mV
-   average_subtract_flag = 1
+   average_subtract_flag = 0
    num_trials = 2
    threshold_to_energy = 1.0#((((digitization_factor*(10**(-3)))**2)/50.0)*(1.0/2600000000.0)*32.0)*10**12 # to get to pJ
    #print threshold_to_energy
    # These delays should be negative, since A is the top antenna
    # and we expect an upgoing signal
-   b_input_delay = -2                # Ch B signal offset
-   c_input_delay = 0            # Ch C signal offset
+   b_input_delay = -15                # Ch B signal offset
+   c_input_delay = -17           # Ch C signal offset
 
    low_SNR = 0.0                   # Lowest SNR
    high_SNR = 5.0                 # Highest SNR
-   step_SNR = 0.25                # SNR interval
+   step_SNR = 1.0                # SNR interval
 
    low_threshold = 0             # Lowest Threshold
    high_threshold = 4095        # Highest Threshold
    step_threshold = 1            # Threshold Interval
+   
+   window_length = 8
+   window_weight = 0.5
    #############################################################
    
   # Set some variables
@@ -153,33 +156,37 @@ if __name__ == '__main__':
    settings_filename.write("\nNumber of Runs: " + str(num_runs))
    settings_filename.write("\nUpsample Factor: " + str(upsample))
    settings_filename.write("\nDigitization Threshold: " + str(digitization_factor)+"*Noise_RMS")
+   if(window_length):
+      settings_filename.write("\nWindow Length: " + str(window_length))
+      settings_filename.write("\nWindow Weight: " + str(window_weight))
    
    SNR_counter = 0
    threshold_counter = 0
 
    ############ Run trials to get noise average #######################
-   for timestep in range(1,num_trials+1):
-      if(timestep % 10 == 0):
-         print "\nStarting trial: "+str(timestep)
+   if(average_subtract_flag):
+      for timestep in range(1,num_trials+1):
+         if(timestep % 10 == 0):
+            print "\nStarting trial: "+str(timestep)
 
-      if(cw_flag):		
-			# CW + thermal noise event
-			#print "cw+thermal"		
-         d1,d2,d3,d4,d5,d6, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,d7,d8,d9,d10,d11,d12 = TISC_sim(0.0,100,
-					b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-					cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
-					noise_sigma=noise_sigma,average_subtract_flag=1,
-					abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-               trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
-      else:
-         # Thermal event					
-         d1,d2,d3,d4,d5,d6, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,d7,d8,d9,d10,d11,d12 = TISC_sim(0.0,100,
-               b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
-               cw_flag=0,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
-               noise_sigma=noise_sigma,average_subtract_flag=1,
-               abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-               trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
-			#print "#########################"			
+         if(cw_flag):		
+            # CW + thermal noise event
+            #print "cw+thermal"		
+            d1,d2,d3,d4,d5,d6, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,d7,d8,d9,d10,d11,d12 = TISC_sim(0.0,100,
+                  b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
+                  cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
+                  noise_sigma=noise_sigma,average_subtract_flag=average_subtract_flag,
+                  abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
+                  trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
+         else:
+            # Thermal event					
+            d1,d2,d3,d4,d5,d6, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,d7,d8,d9,d10,d11,d12 = TISC_sim(0.0,100,
+                  b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
+                  cw_flag=0,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
+                  noise_sigma=noise_sigma,average_subtract_flag=average_subtract_Flag,
+                  abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
+                  trial_run_number=timestep,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
+            #print "#########################"			
 	# Set offsets for plots				
    max_offset = 100
    #print abc_correlation_mean
@@ -214,13 +221,15 @@ if __name__ == '__main__':
          # Check to see if trigger is available
          if ((timestep % int((simulation_rate/event_rate)) == 0)):
             #print "Generating impulsive event"
-            abc_max_sum,abc_as_max_sum,def_max_sum,def_as_max_sum,ghi_max_sum,ghi_as_max_sum, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,as_abc_angle,abc_angle,as_def_angle,def_angle,as_ghi_angle,ghi_angle = TISC_sim(SNR[SNR_counter],100,
+            abc_max_sum,def_max_sum,ghi_max_sum,abc_angle,def_angle,ghi_angle = TISC_sim(SNR[SNR_counter],100,
 						b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 						cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,average_subtract_flag=1,
+						noise_sigma=noise_sigma,average_subtract_flag=average_subtract_flag,
 						abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
-            data_filename.write('\n'+str(timestep)+','+str(0.0)+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(abc_as_max_sum)+','+str(def_max_sum)+','+str(def_as_max_sum)+','+str(ghi_max_sum)+','+str(ghi_as_max_sum))
+                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep,window_length=window_length,window_weight=window_weight)
+            #data_filename.write('\n'+str(timestep)+','+str(0.0)+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(abc_as_max_sum)+','+str(def_max_sum)+','+str(def_as_max_sum)+','+str(ghi_max_sum)+','+str(ghi_as_max_sum))
+            data_filename.write('\n'+str(timestep)+','+str(0.0)+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(def_max_sum)+','+str(ghi_max_sum))
+
             #print abc_as_max_sum
             #print def_as_max_sum
             #print ghi_as_max_sum
@@ -231,13 +240,13 @@ if __name__ == '__main__':
             #print abc_as_max_sum+def_as_max_sum+ghi_as_max_sum
          else:
             #print "Generating Noise Event"
-            abc_max_sum,abc_as_max_sum,def_max_sum,def_as_max_sum,ghi_max_sum,ghi_as_max_sum, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,as_abc_angle,abc_angle,as_def_angle,def_angle,as_ghi_angle,ghi_angle = TISC_sim(0.0,100,
+            abc_max_sum,def_max_sum,ghi_max_sum,abc_angle,def_angle,ghi_angle = TISC_sim(0.0,100,
 						b_input_delay,c_input_delay,num_samples=num_samples,upsample=upsample,
 						cw_flag=cw_flag,carrier_frequency=carrier_frequency,cw_amplitude=cw_amplitude,modulation_frequency=modulation_frequency,
-						noise_sigma=noise_sigma,average_subtract_flag=1,
+						noise_sigma=noise_sigma,average_subtract_flag=average_subtract_flag,
 						abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,
-                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep)
-            data_filename.write('\n'+str(timestep)+','+str(SNR[SNR_counter])+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(abc_as_max_sum)+','+str(def_max_sum)+','+str(def_as_max_sum)+','+str(ghi_max_sum)+','+str(ghi_as_max_sum))
+                  trial_run_number=0,digitization_factor=digitization_factor,boresight=boresight,baseline=baseline,seed=timestep,window_length=window_length,window_weight=window_weight)
+            data_filename.write('\n'+str(timestep)+','+str(SNR[SNR_counter])+','+str(noise_sigma)+','+str(cw_amplitude)+','+str(carrier_frequency)+','+str(modulation_frequency)+','+str(abc_max_sum)+','+str(def_max_sum)+','+str(ghi_max_sum))
             
          three_phi_max_sum = abc_max_sum+def_max_sum+ghi_max_sum
          sum_hist.append(three_phi_max_sum)
@@ -248,17 +257,17 @@ if __name__ == '__main__':
          #print as_abc_angle
          #print as_def_angle
          #print as_ghi_angle
-         first_angle_range = np.abs(np.amax([abc_angle,as_def_angle])-np.min([abc_angle,def_angle]))
-         first_hist.append(as_abc_angle)
-         first_hist.append(as_def_angle)
-         first_hist.append(as_ghi_angle)
-         second_angle_range = np.abs(np.amax([abc_angle,ghi_angle])-np.min([abc_angle,ghi_angle]))
+         #first_angle_range = np.abs(np.amax([abc_angle,as_def_angle])-np.min([abc_angle,def_angle]))
+         #first_hist.append(as_abc_angle)
+         #first_hist.append(as_def_angle)
+         #first_hist.append(as_ghi_angle)
+         #second_angle_range = np.abs(np.amax([abc_angle,ghi_angle])-np.min([abc_angle,ghi_angle]))
          #second_hist.append(second_angle_range)
          #print "First Angle range: %1.2f"%(first_angle_range)
          #print "Second Angle range: %1.2f"%(second_angle_range)
          #print "\n"
-         if((first_angle_range>angle_range)and(second_angle_range>angle_range)):
-            three_phi_max_sum=0
+         #if((first_angle_range>angle_range)and(second_angle_range>angle_range)):
+            #three_phi_max_sum=0
             
          threshold_drop_flag=False
          for threshold_counter in range(0,len(threshold)):

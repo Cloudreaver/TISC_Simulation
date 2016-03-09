@@ -23,7 +23,7 @@ def TISC_sim(SNR,threshold,
              seed=5522684,draw_flag=0,digitization_factor=32.0,
              delay_type_flag=1,
              output_dir="output/",average_subtract_flag=0,abc_correlation_mean=np.zeros(46),
-             def_correlation_mean=np.zeros(44),ghi_correlation_mean=np.zeros(46),trial_run_number=1,boresight=0,baseline=0,six_phi_sector_add=False):
+             def_correlation_mean=np.zeros(44),ghi_correlation_mean=np.zeros(46),trial_run_number=1,boresight=0,baseline=0,six_phi_sector_add=False,window_length=0,window_weight=0.5, debug=False):
    
    # Setup
    save_output_flag = 0
@@ -226,14 +226,14 @@ def TISC_sim(SNR,threshold,
          h_input_signal = b_input_signal*0.650 # from Seavey measurements
          i_input_signal = c_input_signal*0.650
       """
-      """
-      time = np.linspace(0.0,timestep*num_samples,num_samples)
-      plt.plot(time,a_input_signal,time,b_input_signal,time,c_input_signal)
-      plt.plot(time,d_input_signal,time,e_input_signal,time,f_input_signal)
-      plt.plot(time,g_input_signal,time,h_input_signal,time,i_input_signal)
-      plt.title("impulse")
-      plt.show()  
-      """
+      if(debug):
+         time = np.linspace(0.0,timestep*num_samples,num_samples)
+         plt.plot(time,a_input_signal,time,b_input_signal,time,c_input_signal)
+         plt.plot(time,d_input_signal,time,e_input_signal,time,f_input_signal)
+         plt.plot(time,g_input_signal,time,h_input_signal,time,i_input_signal)
+         plt.title("impulse")
+         plt.show()  
+      
       # Add the signal to the noise
       a_input_signal_noise = np.add(a_input_noise, a_input_signal)
       b_input_signal_noise = np.add(b_input_noise, b_input_signal)
@@ -244,14 +244,15 @@ def TISC_sim(SNR,threshold,
       g_input_signal_noise = np.add(g_input_noise, g_input_signal)
       h_input_signal_noise = np.add(h_input_noise, h_input_signal)
       i_input_signal_noise = np.add(i_input_noise, i_input_signal)
-      """
-      time = np.linspace(0.0,timestep*num_samples,num_samples)
-      #plt.plot(time,a_input_signal_noise,time,b_input_signal_noise,time,c_input_signal_noise)
-      #plt.plot(time,d_input_signal_noise,time,e_input_signal_noise,time,f_input_signal_noise)
-      plt.plot(time,g_input_signal_noise,time,h_input_signal_noise,time,i_input_signal_noise)
-      plt.title("impulse+noise")
-      plt.show()
-      """
+      
+      if(debug):
+         time = np.linspace(0.0,timestep*num_samples,num_samples)
+         #plt.plot(time,a_input_signal_noise,time,b_input_signal_noise,time,c_input_signal_noise)
+         #plt.plot(time,d_input_signal_noise,time,e_input_signal_noise,time,f_input_signal_noise)
+         plt.plot(time,g_input_signal_noise,time,h_input_signal_noise,time,i_input_signal_noise)
+         plt.title("impulse+noise")
+         plt.show()
+      
    else:
       a_input_signal_noise = a_input_noise
       b_input_signal_noise = b_input_noise
@@ -280,14 +281,15 @@ def TISC_sim(SNR,threshold,
    i_dig_waveform = digitize(i_input_signal_noise,num_samples,num_bits,digitization_factor)
 
 ##########################################
-   """
-   time = np.linspace(0.0,timestep*num_samples,num_samples)
-   #plt.plot(time,a_dig_waveform,time,b_dig_waveform,time,c_dig_waveform)
-   #plt.plot(time,d_dig_waveform,time,e_dig_waveform,time,f_dig_waveform)
-   plt.plot(time,g_dig_waveform,time,h_dig_waveform,time,i_dig_waveform)
-   plt.title("Digitized")
-   plt.show()
-   """
+   
+   if(debug):
+      time = np.linspace(0.0,timestep*num_samples,num_samples)
+      #plt.plot(time,a_dig_waveform,time,b_dig_waveform,time,c_dig_waveform)
+      #plt.plot(time,d_dig_waveform,time,e_dig_waveform,time,f_dig_waveform)
+      plt.plot(time,g_dig_waveform,time,h_dig_waveform,time,i_dig_waveform)
+      plt.title("Digitized")
+      plt.show()
+   
    
 ##########################################
    # Run the signal through the GLITC module to get trigger
@@ -302,12 +304,12 @@ def TISC_sim(SNR,threshold,
       #abc_max_sum
       #print len(a_dig_waveform)  
    else:
-      abc_trigger_flag, abc_max_sum,abc_andle,d1 = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,abc_baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag,correlation_mean=abc_correlation_mean,trial_run_number=trial_run_number)
+      abc_trigger_flag, abc_max_sum,abc_angle,d1 = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,abc_baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=abc_correlation_mean,trial_run_number=trial_run_number,window_length=window_length,window_weight=window_weight)
       def_trigger_flag, def_max_sum,def_angle,d1 = sum_correlate(num_samples,d_dig_waveform,e_dig_waveform,f_dig_waveform,threshold,def_baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag,correlation_mean=def_correlation_mean,trial_run_number=trial_run_number)
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=def_correlation_mean,trial_run_number=trial_run_number,window_length=window_length,window_weight=window_weight)
       ghi_trigger_flag, ghi_max_sum,ghi_angle,d1 = sum_correlate(num_samples,g_dig_waveform,h_dig_waveform,i_dig_waveform,threshold,ghi_baseline,TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag,correlation_mean=ghi_correlation_mean,trial_run_number=trial_run_number)
+                                                average_subtract_flag=average_subtract_flag,correlation_mean=ghi_correlation_mean,trial_run_number=trial_run_number,window_length=window_length,window_weight=window_weight)
       #print abc_max_sum
       #print def_max_sum
       #print ghi_max_sum
@@ -339,11 +341,12 @@ if __name__ == '__main__':
    num_bits = 3
    #signal_amp = 10.0
    draw_flag = False
+   debug = False
    # These delays should be negative, since A is the top antenna
    # and we expect an upgoing signal
    b_input_delay = -15
    c_input_delay = -17
-   SNR = 5.0
+   SNR = 3.0
    threshold = 100
    noise_sigma = 32.0
    boresight=0
@@ -356,7 +359,7 @@ if __name__ == '__main__':
    modulation_frequency = 1.0
    delay_type_flag = 1
    digitization_factor=32.0
-   average_subtract_flag = 1
+   average_subtract_flag = 0
    #global correlation_mean
    abc_correlation_mean = np.zeros(63)
    #abc_correlation_mean.fill(100)
@@ -408,7 +411,7 @@ if __name__ == '__main__':
                             abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,seed=i)
 
                             
-   print 'Correlation test: ' +str(abc_correlation_mean)
+   #print 'Correlation test: ' +str(abc_correlation_mean)
    for i in range(0,1):
       if(average_subtract_flag):
          abc_max_sum,abc_as_max_sum,def_max_sum, def_as_max_sum,ghi_max_sum, ghi_as_max_sum, abc_correlation_mean,def_correlation_mean,ghi_correlation_mean,as_abc_angle,abc_angle,as_def_angle,def_angle,as_ghi_angle,ghi_angle = TISC_sim(SNR,threshold,b_input_delay,c_input_delay,num_bits=num_bits,
@@ -418,20 +421,22 @@ if __name__ == '__main__':
                             average_subtract_flag=average_subtract_flag,trial_run_number=0,
                             abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,seed=i)
       else:
-         abc_max_sum, def_max_sum, ghi_max_sum = TISC_sim(SNR,threshold,b_input_delay,c_input_delay,num_bits=num_bits,
+         abc_max_sum, def_max_sum, ghi_max_sum,abc_angle, def_angle, ghi_angle = TISC_sim(SNR,threshold,b_input_delay,c_input_delay,num_bits=num_bits,
                             upsample=upsample,num_samples=num_samples,noise_sigma=noise_sigma,
                             cw_flag=cw_flag,cw_amplitude=cw_amplitude,carrier_frequency=cw_frequency,modulation_frequency=modulation_frequency,
                             draw_flag=draw_flag,digitization_factor=digitization_factor,output_dir="output/",delay_type_flag=delay_type_flag,
                             average_subtract_flag=average_subtract_flag,trial_run_number=0,
-                            abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,seed=i)                        
+                            abc_correlation_mean=abc_correlation_mean,def_correlation_mean=def_correlation_mean,ghi_correlation_mean=ghi_correlation_mean,seed=i,debug=debug)                        
       
       print abc_max_sum
       print def_max_sum
       print ghi_max_sum
-   
+      """
       print abc_as_max_sum
       print def_as_max_sum
       print ghi_as_max_sum
       
       print as_abc_angle,as_def_angle,as_ghi_angle
+      """
       print abc_angle,def_angle,ghi_angle
+      

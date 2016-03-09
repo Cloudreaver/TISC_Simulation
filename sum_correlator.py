@@ -44,7 +44,7 @@ def read_GLITC_delays(baseline):
       
    return GLITC_delays
 
-def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,baseline,TISC_sample_length=16,delay_type_flag=0,average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=0,six_phi_sector_add=False,debug=False):
+def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,threshold,baseline,TISC_sample_length=16,delay_type_flag=0,average_subtract_flag=0,correlation_mean=np.zeros(44),trial_run_number=0,six_phi_sector_add=False,window_length=8,window_weight=0.5,debug=False):
    #speed_of_light = 2.99*10**8
    #sample_period = 3.5810**(-10)
    #ab_distance = 1.0
@@ -110,137 +110,102 @@ def sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,thres
       #GLITC_delays = np.array([[0,0,0],[1,0,0]])
       """
    
-###############################################
-# Do Sum correlation
-###############################################
-   
-   #print correlation_mean
-   prev_sum = np.zeros(num_delays)
-   this_sum = np.zeros(num_delays)
-   total_sum = np.zeros(num_delays)
-   temp_sum = np.zeros(num_delays)
-   max_total_sum = 0
-   add_AB = [0] * TISC_sample_length
-   add_ABC = [0] * TISC_sample_length
 
-   best_chunk = 0
-   b_lower_index_limit = 0
-   c_lower_index_limit = 0
+   
    trigger_flag = 0
    timestep = 1.0/2600000000.0
+   
+   #print correlation_mean
+   total_sum = np.zeros(num_delays)
+   max_total_sum = 0
+   prev_add_AB = np.zeros(TISC_sample_length)
+   prev_add_ABC = np.zeros(TISC_sample_length)
+   add_AB = np.zeros(TISC_sample_length)
+   add_ABC = np.zeros(TISC_sample_length)
    t = np.linspace(0,timestep*num_samples,num_samples)
-   #print baseline
-   #print num_delays
-   if (delay_type_flag == 1):
-      square_sum_ABC = np.zeros(num_delays)
-      previous_square_sum = np.zeros(num_delays)
-   else:
-      square_sum_ABC = np.zeros(200*num_samples)
-      previous_square_sum = np.zeros(200*num_samples)
-      delays = np.zeros((200*num_samples,3))
-      i = 0
+   square_sum_ABC = np.zeros(num_delays)
+   prev_square_sum_ABC = np.zeros(num_delays)
+   
 
-   # Use GLITC Firmware Delays
-   if (delay_type_flag == 1):
-      #print 'Using GLITC type'
-      # Build two 16 sample sums (starting with sample 2)
-      #num_chunks = int(len(a_dig_waveform)/TISC_sample_length)
-      for chunk in range(0,2):
-         previous_square_sum = square_sum_ABC
-         square_sum_ABC= np.zeros(num_delays)
+   
+   
+   ###############################################
+   # Do Sum correlation
+   ###############################################
 
-         # Get sum correlation for 16 samples
-         for i in range(0,num_delays):
-            
-            # Determine the starting position for each sample
-            # Magic number (37) here is the minimum position of the impulse position
-            # To allow for all delays to be calcumated
-            a_start_pos = chunk*TISC_sample_length+GLITC_delays[i][0]+37
-            b_start_pos = chunk*TISC_sample_length+GLITC_delays[i][1]+37
-            c_start_pos = chunk*TISC_sample_length+GLITC_delays[i][2]+37
-            
-            # Make sure we don't run off the front end of the array
-            # These delays will be picked up in the next chunk
-            # Probably don't need thing anymore
-            if ((a_start_pos < 0) or (b_start_pos < 0 ) or (c_start_pos < 0)):
-               continue
-            
-            # Add each sample at given delay
-            #print len(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length])
-            #print len(b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
-            add_AB = np.add(a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length])
-            #print add_AB
-            add_ABC = np.add(add_AB,c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
-            #print add_ABC
-            square_ABC = np.square(add_ABC)
-            #print square_ABC
-            square_sum_ABC[i] = np.sum(square_ABC)
-            #print square_sum_ABC[i]
-            """
-            if(debug and square_sum_ABC[i]>500):
-               #print len(t)
-               #print len(a_dig_waveform)
-               #print len(b_dig_waveform)
-               #print len(c_dig_waveform)
-               print "Temp sum and delay"
-               print square_sum_ABC[i]
-               print GLITC_delays[i]
-               plt.figure(1)
-               plt.plot(t[a_start_pos:a_start_pos+TISC_sample_length],a_dig_waveform[a_start_pos:a_start_pos+TISC_sample_length],t[a_start_pos:a_start_pos+TISC_sample_length],b_dig_waveform[b_start_pos:b_start_pos+TISC_sample_length],t[a_start_pos:a_start_pos+TISC_sample_length],c_dig_waveform[c_start_pos:c_start_pos+TISC_sample_length])
-               plt.figure(2)
-               plt.plot(t[a_start_pos:a_start_pos+TISC_sample_length],add_ABC)
-               plt.figure(3)
-               plt.plot(t[a_start_pos:a_start_pos+TISC_sample_length],square_ABC)
-               plt.show()
-            """
-      # Add all the 16 sample sums for each delay
-      total_sum = np.add(square_sum_ABC,previous_square_sum) 
+   # Get sum correlation for 16 samples
+   for i in range(0,num_delays):
       
-      # Find the maximum sum
-      max_total_sum = np.amax(total_sum)
+      # Determine the starting position for each sample
+      # Magic number (37) here is the minimum position of the impulse position
+      # To allow for all delays to be calcumated
+      prev_a_start_pos = 37
+      prev_a_end_pos = prev_a_start_pos+TISC_sample_length
+      a_start_pos = prev_a_end_pos+1
+      a_end_pos = a_start_pos+TISC_sample_length
       
-      # Find the delays for the largest sum
-      best_delays = GLITC_delays[np.argmax(total_sum)]
+      prev_b_start_pos = int(prev_a_start_pos+GLITC_delays[i][1])
+      prev_b_end_pos = prev_b_start_pos+TISC_sample_length
+      b_start_pos = prev_b_start_pos+1
+      b_end_pos = b_start_pos+TISC_sample_length
       
-      if(debug and max_total_sum>400):
-         print "Best sum and delays"
-         print max_total_sum
-         print best_delays
-         bplot =np.roll(b_dig_waveform,int(best_delays[1]))
-         cplot = np.roll(c_dig_waveform,int(best_delays[2]))
-         plt.figure(10)
-         plt.plot(t,a_dig_waveform,t,bplot,t,cplot)
-         plt.show()
+      prev_c_start_pos = int(prev_a_start_pos+GLITC_delays[i][2])
+      prev_c_end_pos = prev_c_start_pos+TISC_sample_length
+      c_start_pos = prev_c_start_pos+1
+      c_end_pos = c_start_pos+TISC_sample_length
       
-      if(average_subtract_flag):
-         # Average over sums during the trial period
-         if (trial_run_number>0):
-            #print correlation_mean
-            #print len(total_sum)
-            #print len(correlation_mean)
-            correlation_mean = (1.0/float(trial_run_number))*(((float(trial_run_number)-1.0)*correlation_mean)+total_sum)
-            
-         # After the trial period (trial_run_number=0) actually subtracted the average
-         #print len(total_sum)
-         #print len(correlation_mean)
-         as_total_sum = np.subtract(total_sum,correlation_mean)
-         as_max_total_sum = np.amax(as_total_sum)
-         as_best_delays = GLITC_delays[np.argmax(as_total_sum)]
-         #print trial_run_number
-         #print 'Total Sum: '+str(total_sum)
-         #print 'Correlation mean in correlator'+str(correlation_mean)
-         #print "Total Sum: "+str(total_sum[0])
-         #print "Running Mean: "+str(correlation_mean[0])
-         #print ((float(trial_run_number)-1)*float(correlation_mean[0]))
-         #print as_total_sum[0]
-         #print "\n"
-      #print trial_run_number
-      #print correlation_mean[10]
-      #print total_sum
-      #print "\n"
-      #print total_sum
-      #print len(total_sum)
-      #print len(GLITC_delays)
+      # Add each sample at given delay
+      #print a_dig_waveform[prev_a_start_pos:prev_a_end_pos]
+      #print a_dig_waveform[a_start_pos:a_end_pos]
+      prev_add_AB = np.add(a_dig_waveform[prev_a_start_pos:prev_a_end_pos],b_dig_waveform[prev_b_start_pos:prev_b_end_pos])
+      add_AB = np.add(a_dig_waveform[a_start_pos:a_end_pos],b_dig_waveform[b_start_pos:b_end_pos])
+      
+      prev_add_ABC = np.add(prev_add_AB,c_dig_waveform[prev_c_start_pos:prev_c_end_pos])
+      add_ABC = np.add(add_AB,c_dig_waveform[c_start_pos:c_end_pos])
+      
+      # Apply window if desired
+      if(window_length):
+         #print "Windowing"
+         add_ABC[len(add_ABC)-window_length:len(add_ABC)] *= window_weight
+      
+      # Square the elements
+      prev_square_ABC = np.square(prev_add_ABC)
+      square_ABC = np.square(add_ABC)
+
+      # Accumulate the arrays
+      prev_square_sum_ABC[i] = np.sum(prev_square_ABC)
+      square_sum_ABC[i] = np.sum(square_ABC)
+      
+
+   # Add all the 16 sample sums for each delay
+   total_sum = np.add(square_sum_ABC,prev_square_sum_ABC) 
+   #print prev_square_sum_ABC
+   #print square_sum_ABC 
+   
+   # Find the maximum sum
+   max_total_sum = np.amax(total_sum)
+   
+   # Find the delays for the largest sum
+   best_delays = GLITC_delays[np.argmax(total_sum)]
+   
+   if(debug and max_total_sum>400):
+      print "Best sum and delays"
+      print max_total_sum
+      print best_delays
+      bplot =np.roll(b_dig_waveform,int(best_delays[1]))
+      cplot = np.roll(c_dig_waveform,int(best_delays[2]))
+      plt.figure(10)
+      plt.plot(t,a_dig_waveform,t,bplot,t,cplot)
+      plt.show()
+   
+   
+   #print trial_run_number
+   #print correlation_mean[10]
+   #print total_sum
+   #print "\n"
+   #print total_sum
+   #print len(total_sum)
+   #print len(GLITC_delays)
    #print "Max Sum: "+str(max_total_sum)
    #print best_delays
    """
@@ -309,20 +274,21 @@ if __name__ == '__main__':
    upsample = 10
    num_bits = 3
    noise_sigma = 32.0
-   SNR = 5.0
+   digitization_factor=32.0
+   SNR = 1.8
    num_upsamples = num_samples*upsample
-   a_dig_waveform = np.zeros(num_upsamples)
+   #a_dig_waveform = np.zeros(num_upsamples)
    a_waveform = np.zeros(num_samples)
    #a_dig_waveform[20] = 3.5
    #a_dig_waveform[21] = -3.5
    #a_dig_waveform[22] = 2.5
    #a_dig_waveform[23] = -2.5
    a_delay = 0
-   b_delay = -15
-   c_delay = -17
+   b_delay = -14
+   c_delay = -16
    TISC_sample_length = 16
    delay_type_flag = 1
-   average_subtract_flag = 1
+   average_subtract_flag = 0
    correlation_mean = np.zeros(63)
    correlation_mean.fill(50)
    filter_flag = 0
@@ -330,28 +296,35 @@ if __name__ == '__main__':
    timestep = 1.0/2600000000.0
    t = np.linspace(0,timestep*num_samples,num_samples)
    signal_amp = SNR*2*noise_sigma
+   window_length=8
+   window_weight=0.5
 
    for i in range(0,1):
-      a_waveform = impulse_gen(num_samples,a_delay,upsample,draw_flag=0,output_dir='output/')
+      #a_waveform = impulse_gen(num_samples,a_delay,upsample,draw_flag=0,output_dir='output/')
+      a_dig_waveform = np.zeros(num_samples)
+      b_dig_waveform = np.zeros(num_samples)
+      c_dig_waveform = np.zeros(num_samples)
+      a_waveform[40:52]=[3.5,-3.5 ,3.0,-3.0,2.5,-2.5,2.0,-2.0,1.5,-1.5,1.0,-1.0]
       empty_list = np.zeros(num_samples)
       difference=np.amax(a_waveform)-np.amin(a_waveform) # Get peak to peak voltage
       a_waveform *= (1/difference) # Normalize input
       a_waveform *= signal_amp # Amplify
-      a_imp_dig_wfm = digitize(a_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
+      a_imp_dig_wfm = digitize(a_waveform,num_samples,num_bits,digitization_factor=digitization_factor)
       a_waveform = np.add(a_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
       b_waveform = np.concatenate([a_waveform[-b_delay:],empty_list[:(-1)*b_delay]])
       c_waveform = np.concatenate([a_waveform[-c_delay:],empty_list[:(-1)*c_delay]])
       b_waveform = np.add(b_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
       c_waveform = np.add(c_waveform,generate_noise(num_samples,noise_sigma,filter_flag))
-      #a_waveform[40]=3.5
-      #a_waveform[41]=-3.5
+      
+      #a_dig_waveform[40]=3.5
+      #b_dig_waveform = np.roll(a_dig_waveform,b_delay)
+      #c_dig_waveform = np.roll(a_dig_waveform,c_delay)
+
       
       
-      
-      
-      a_dig_waveform = digitize(a_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
-      b_dig_waveform = digitize(b_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
-      c_dig_waveform = digitize(c_waveform,num_samples,num_bits,digitization_factor=noise_sigma)
+      a_dig_waveform = digitize(a_waveform,num_samples,num_bits,digitization_factor=digitization_factor)
+      b_dig_waveform = digitize(b_waveform,num_samples,num_bits,digitization_factor=digitization_factor)
+      c_dig_waveform = digitize(c_waveform,num_samples,num_bits,digitization_factor=digitization_factor)
       
       
       start =37
@@ -359,11 +332,11 @@ if __name__ == '__main__':
 
       #print np.sum(np.square(3*a_dig_waveform[start:end]))
       #plt.plot(t[start:end],a_dig_waveform[start:end],t[start:end],b_dig_waveform[start:end],t[start:end],c_dig_waveform[start:end])
-      plt.plot(t,a_dig_waveform,t,b_dig_waveform,t,c_dig_waveform)
-      plt.show()
+      #plt.plot(t,a_dig_waveform,t,b_dig_waveform,t,c_dig_waveform)
+      #plt.show()
       #print a_dig_waveform
       #print i
-      passed_flag, max_sum, as_max_sum, correlation_mean, dummy1,dummy2,max_sum_angle, as_max_sum_angle = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,
+      passed_flag, max_sum, best_delays,total_sum = sum_correlate(num_samples,a_dig_waveform,b_dig_waveform,c_dig_waveform,
                                                 threshold,baseline,TISC_sample_length=TISC_sample_length,delay_type_flag=delay_type_flag,
-                                                average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,trial_run_number=0,debug=debug)
-   print passed_flag, max_sum, as_max_sum, max_sum_angle, as_max_sum_angle
+                                                average_subtract_flag=average_subtract_flag, correlation_mean=correlation_mean,trial_run_number=0,window_length=window_length,window_weight=window_weight,debug=debug)
+   print passed_flag, max_sum, best_delays#, total_sum
