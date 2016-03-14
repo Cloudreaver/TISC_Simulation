@@ -106,6 +106,8 @@ def sum_correlate(sim_param,a_dig_waveform,b_dig_waveform,c_dig_waveform,baselin
       # Apply window if desired
       if(sim_param.window_length):
          #print "Windowing"
+         #print sim_param.window_length
+         #print sim_param.window_weight
          add_ABC[len(add_ABC)-sim_param.window_length:len(add_ABC)] *= sim_param.window_weight
       
       # Square the elements
@@ -162,6 +164,7 @@ if __name__ == '__main__':
    from noise import generate_noise
    from simulation_parameters import sim_param
    
+   '''
    threshold = 300
    num_samples = 80
    baseline = 0
@@ -172,7 +175,7 @@ if __name__ == '__main__':
    SNR = 1.8
    num_upsamples = num_samples*upsample
    #a_dig_waveform = np.zeros(num_upsamples)
-   a_waveform = np.zeros(num_samples)
+   
    #a_dig_waveform[20] = 3.5
    #a_dig_waveform[21] = -3.5
    #a_dig_waveform[22] = 2.5
@@ -187,13 +190,20 @@ if __name__ == '__main__':
    correlation_mean.fill(50)
    filter_flag = 0
    debug = False
+   
+   
+   
+   #window_length=0
+   #window_weight=0.5
+   '''
+   
+   a_waveform = np.zeros(sim_param.num_samples)
+   signal_amp = sim_param.SNR*2*sim_param.noise_sigma
    timestep = 1.0/2600000000.0
    t = np.linspace(0,timestep*sim_param.num_samples,sim_param.num_samples)
-   signal_amp = sim_param.SNR*2*sim_param.noise_sigma
-   window_length=8
-   window_weight=0.5
-
-   for i in range(0,1):
+   average_max_sum=0
+   
+   for i in range(0,100):
       #a_waveform = impulse_gen(num_samples,a_delay,upsample,draw_flag=0,output_dir='output/')
       a_dig_waveform = np.zeros(sim_param.num_samples)
       b_dig_waveform = np.zeros(sim_param.num_samples)
@@ -203,12 +213,12 @@ if __name__ == '__main__':
       difference=np.amax(a_waveform)-np.amin(a_waveform) # Get peak to peak voltage
       a_waveform *= (1/difference) # Normalize input
       a_waveform *= signal_amp # Amplify
-      a_imp_dig_wfm = digitize(sim_param,a_waveform)
-      a_waveform = np.add(a_waveform,generate_noise(sim_param))
-      b_waveform = np.concatenate([a_waveform[-sim_param.b_delay:],empty_list[:(-1)*sim_param.b_delay]])
-      c_waveform = np.concatenate([a_waveform[-sim_param.c_delay:],empty_list[:(-1)*sim_param.c_delay]])
-      b_waveform = np.add(b_waveform,generate_noise(sim_param))
-      c_waveform = np.add(c_waveform,generate_noise(sim_param))
+      a_imp_dig_wfm = digitize(a_waveform,sim_param.num_samples,sim_param.num_bits,sim_param.digitization_factor)
+      a_waveform = np.add(a_waveform,generate_noise(sim_param.num_samples,noise_sigma=sim_param.noise_sigma))
+      b_waveform = np.concatenate([a_waveform[-sim_param.b_input_delay:],empty_list[:(-1)*sim_param.b_input_delay]])
+      c_waveform = np.concatenate([a_waveform[-sim_param.c_input_delay:],empty_list[:(-1)*sim_param.c_input_delay]])
+      b_waveform = np.add(b_waveform,generate_noise(sim_param.num_samples,noise_sigma=sim_param.noise_sigma))
+      c_waveform = np.add(c_waveform,generate_noise(sim_param.num_samples,noise_sigma=sim_param.noise_sigma))
       
       #a_dig_waveform[40]=3.5
       #b_dig_waveform = np.roll(a_dig_waveform,b_delay)
@@ -216,9 +226,9 @@ if __name__ == '__main__':
 
       
       
-      a_dig_waveform = digitize(sim_param,a_waveform)
-      b_dig_waveform = digitize(sim_param,b_waveform)
-      c_dig_waveform = digitize(sim_param,c_waveform)
+      a_dig_waveform = digitize(a_waveform,sim_param.num_samples,sim_param.num_bits,sim_param.digitization_factor)
+      b_dig_waveform = digitize(b_waveform,sim_param.num_samples,sim_param.num_bits,sim_param.digitization_factor)
+      c_dig_waveform = digitize(c_waveform,sim_param.num_samples,sim_param.num_bits,sim_param.digitization_factor)
       
       
       start =37
@@ -230,5 +240,8 @@ if __name__ == '__main__':
       #plt.show()
       #print a_dig_waveform
       #print i
-      passed_flag, max_sum, best_delays,total_sum = sum_correlate(sim_param,a_dig_waveform,b_dig_waveform,c_dig_waveform,baseline)
-   print passed_flag, max_sum, best_delays#, total_sum
+      passed_flag, max_sum, best_delays,total_sum = sum_correlate(sim_param,a_dig_waveform,b_dig_waveform,c_dig_waveform,sim_param.baseline)
+      #print passed_flag, max_sum, best_delays#, total_sum
+      average_max_sum += max_sum
+   average_max_sum /=100
+   print average_max_sum

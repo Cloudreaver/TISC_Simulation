@@ -13,7 +13,7 @@ class sim_param:
    num_delays = [63,46]
    
    # Impulse parameters
-   SNR = 5.0
+   SNR = 5
    num_samples = 80
    impulse_position = 0
    b_input_delay = -15 # These delays should be negative, since A is the 
@@ -30,7 +30,7 @@ class sim_param:
    modulation_frequency = 1.0
    
    # Simulation Control
-   num_events=2
+   num_events=10000
    angle_range = 100
    simulation_rate = 162500000.0          # Simulation Rate
    event_rate = 81250000.0                 # Rate to generate events

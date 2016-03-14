@@ -338,13 +338,16 @@ if __name__ == '__main__':
 
    SNR = sim_param.SNR
    print "SNR: "+str(SNR)
+   average_max_sum=0
    #print "Threshold: "+str(threshold)
                      
    #print 'Correlation test: ' +str(abc_correlation_mean)
-   for i in range(0,1):
+   for i in range(0,100):
 
       abc_max_sum, def_max_sum, ghi_max_sum,abc_angle, def_angle, ghi_angle = TISC_sim(sim_param,SNR,seed=i)                        
-   
+      average_max_sum+=abc_max_sum
+   average_max_sum/=100
+   print "Average max sum: "+str(average_max_sum)
    print abc_max_sum
    print def_max_sum
    print ghi_max_sum
