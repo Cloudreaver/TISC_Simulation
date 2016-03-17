@@ -133,7 +133,7 @@ if __name__ == '__main__':
       
          # Check to see if trigger is available
          if ((timestep % int((sim_param.simulation_rate/sim_param.event_rate)) == 0)):
-            abc_max_sum,def_max_sum,ghi_max_sum,abc_angle,def_angle,ghi_angle = TISC_sim(sim_param,SNR=sim_param.SNR,seed=timestep)
+            abc_max_sum,def_max_sum,ghi_max_sum,abc_angle,def_angle,ghi_angle = TISC_sim(sim_param,SNR=SNR[SNR_counter],seed=timestep)
             data_filename.write('\n'+str(timestep)+','+str(0.0)+','+str(sim_param.noise_sigma)+','+str(sim_param.cw_amplitude)+','+str(sim_param.cw_frequency)+','+str(sim_param.modulation_frequency)+','+str(abc_max_sum)+','+str(def_max_sum)+','+str(ghi_max_sum))
          else:
             abc_max_sum,def_max_sum,ghi_max_sum,abc_angle,def_angle,ghi_angle = TISC_sim(sim_param,SNR=0.0,seed=timestep)

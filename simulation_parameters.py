@@ -15,12 +15,14 @@ class sim_param:
    # Impulse parameters
    SNR = 5
    num_samples = 80
-   impulse_position = 0
+   impulse_position = 37
    b_input_delay = -15 # These delays should be negative, since A is the 
    c_input_delay = -17 # top antenna and we expect an upgoing signal
    boresight=0
    baseline = 0
-   upsample = 1
+   upsample = 10
+   impulse_type = 0 # 0=Testbench impulse, 1 = ANITA I impulse
+   filter_order = 8
    
    # Thermal & CW noise parameters
    noise_sigma = 32.0

@@ -147,12 +147,21 @@ def TISC_sim(sim_param,SNR,seed=10):
       signal_amp = SNR*2*sim_param.noise_sigma
       
       # Generate Signal and Amplify
-      a_input_signal = impulse_gen(sim_param)
-      difference=np.amax(a_input_signal)-np.amin(a_input_signal) # Get peak to peak voltage
-      a_input_signal *= (1/difference) # Normalize input
-      a_input_signal *= signal_amp # Amplify
-      b_input_signal = np.concatenate([a_input_signal[-sim_param.b_input_delay:],empty_list[:(-1)*sim_param.b_input_delay]])
-      c_input_signal = np.concatenate([a_input_signal[-sim_param.c_input_delay:],empty_list[:(-1)*sim_param.c_input_delay]])
+      impulse_signal = impulse_gen(sim_param)
+      difference=np.amax(impulse_signal)-np.amin(impulse_signal) # Get peak to peak voltage
+      impulse_signal *= (1/difference) # Normalize input
+      impulse_signal *= signal_amp # Amplify
+      
+      # Shift impulse to at least position 37
+      a_input_signal = np.concatenate([empty_list[0:sim_param.impulse_position],impulse_signal[:sim_param.num_samples-sim_param.impulse_position]])
+      b_input_signal = np.concatenate([empty_list[0:sim_param.impulse_position+sim_param.b_input_delay],impulse_signal[:sim_param.num_samples-sim_param.impulse_position-sim_param.b_input_delay]])
+      c_input_signal = np.concatenate([empty_list[0:sim_param.impulse_position+sim_param.c_input_delay],impulse_signal[:sim_param.num_samples-sim_param.impulse_position-sim_param.c_input_delay]])
+      print len(a_input_signal)
+      print len(b_input_signal)
+      print len(c_input_signal)
+      
+      #b_input_signal = np.concatenate([a_input_signal[-sim_param.b_input_delay:],empty_list[:(-1)*sim_param.b_input_delay]])
+      #c_input_signal = np.concatenate([a_input_signal[-sim_param.c_input_delay:],empty_list[:(-1)*sim_param.c_input_delay]])
       
       
       # Account for Seavey angular response
@@ -339,10 +348,11 @@ if __name__ == '__main__':
    SNR = sim_param.SNR
    print "SNR: "+str(SNR)
    average_max_sum=0
+   sim_param.debug = True
    #print "Threshold: "+str(threshold)
                      
    #print 'Correlation test: ' +str(abc_correlation_mean)
-   for i in range(0,100):
+   for i in range(0,1):
 
       abc_max_sum, def_max_sum, ghi_max_sum,abc_angle, def_angle, ghi_angle = TISC_sim(sim_param,SNR,seed=i)                        
       average_max_sum+=abc_max_sum
